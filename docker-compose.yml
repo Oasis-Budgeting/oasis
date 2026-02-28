@@ -1,7 +1,7 @@
 services:
-  bucket-budget:
-    image: ghcr.io/suryavamsi6/bucket-budget:latest
-    container_name: bucket-budget
+  oasis:
+    image: ghcr.io/suryavamsi6/oasis:latest
+    container_name: oasis
     ports:
       - "3000:3000"
     volumes:
