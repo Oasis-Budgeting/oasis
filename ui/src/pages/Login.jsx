@@ -46,7 +46,7 @@ export default function Login() {
                                     Take control of every dollar.
                                 </h1>
                                 <p className="mt-4 max-w-md text-muted-foreground">
-                                    BucketBudget helps you plan ahead, track spending live, and build momentum toward your goals.
+                                    Oasis helps you plan ahead, track spending live, and build momentum toward your goals.
                                 </p>
                             </div>
                             <div className="space-y-3">

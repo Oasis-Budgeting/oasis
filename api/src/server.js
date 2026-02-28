@@ -82,7 +82,7 @@ async function start() {
         const host = process.env.HOST || '0.0.0.0';
         const port = parseInt(process.env.PORT || '3000', 10);
         await app.listen({ port, host });
-        app.log.info(`Bucket Budget running on http://${host}:${port}`);
+        app.log.info(`Oasis running on http://${host}:${port}`);
     } catch (err) {
         console.error('Failed to start server or run migrations:', err);
         process.exit(1);

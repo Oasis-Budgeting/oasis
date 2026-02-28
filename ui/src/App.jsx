@@ -73,7 +73,7 @@ function Sidebar({ isOpen, onClose }) {
                         <Sparkles className="h-5 w-5" />
                     </div>
                     <div>
-                        <p className="font-display text-lg font-bold text-card-foreground">BucketBudget</p>
+                        <p className="font-display text-lg font-bold text-card-foreground">Oasis</p>
                         <p className="text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">Personal Finance</p>
                     </div>
                 </div>
@@ -131,7 +131,7 @@ function ProtectedLayout() {
     const location = useLocation();
     const { user, loading } = useAuth();
     const { theme, setTheme } = useTheme();
-    const pageTitle = PAGE_TITLES[location.pathname] || 'Bucket Budget';
+    const pageTitle = PAGE_TITLES[location.pathname] || 'Oasis';
     const todayLabel = new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
 
     if (loading) {

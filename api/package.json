@@ -1,7 +1,7 @@
 {
   "name": "bucket-budget-api",
   "version": "1.0.0",
-  "description": "Bucket Budget API - Self-hosted envelope budgeting",
+  "description": "Oasis API - Self-hosted envelope budgeting",
   "main": "src/server.js",
   "type": "module",
   "scripts": {

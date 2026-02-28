@@ -1,6 +1,6 @@
 {
-    "name": "BucketBudget",
-    "short_name": "BucketBudget",
+    "name": "Oasis",
+    "short_name": "Oasis",
     "description": "Smart personal finance tracker",
     "start_url": "/",
     "display": "standalone",

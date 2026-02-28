@@ -17,7 +17,7 @@ export async function buildFinancialContext(userId, sections = 'all', months = 6
     const dateStr = now.toISOString().split('T')[0];
     const currentMonth = now.toISOString().slice(0, 7);
 
-    let md = `# BucketBudget Financial Summary\n`;
+    let md = `# Oasis Financial Summary\n`;
     md += `> Generated: ${dateStr} | Currency: ${currency}\n\n`;
 
     // --- ACCOUNTS ---
