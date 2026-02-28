@@ -13,7 +13,7 @@ import { Label } from '../components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 
 export default function Subscriptions() {
-    const { fmt } = useSettings();
+    const { fmt, settings } = useSettings();
     const [items, setItems] = useState([]);
     const [accounts, setAccounts] = useState([]);
     const [categories, setCategories] = useState([]);
@@ -157,31 +157,35 @@ export default function Subscriptions() {
                         <Play className={`mr-2 h-4 w-4 ${processing ? 'animate-pulse' : ''}`} />
                         {processing ? 'Processing...' : 'Process Due'}
                     </Button>
-                    <Button onClick={openNew} className="bg-indigo-600 hover:bg-indigo-700 text-white">
+                    <Button onClick={openNew} className="bg-primary text-primary-foreground hover:bg-primary/90">
                         <Plus className="mr-2 h-4 w-4" /> Add New
                     </Button>
                 </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <Card className="bg-card border-border">
+                <Card className="h-full min-h-[136px] bg-card border-border shadow-sm">
                     <CardHeader className="pb-2">
-                        <CardDescription>Active Subscriptions</CardDescription>
-                        <CardTitle className="text-3xl text-card-foreground">
+                        <CardDescription className="text-muted-foreground font-medium tracking-wide text-xs uppercase">Active Subscriptions</CardDescription>
+                        <CardTitle className="text-3xl font-bold tracking-tight text-card-foreground">
                             {items.filter(i => i.is_subscription && i.status === 'active').length}
                         </CardTitle>
                     </CardHeader>
                 </Card>
-                <Card className="bg-card border-border">
+                <Card className="h-full min-h-[136px] bg-card border-border shadow-sm">
                     <CardHeader className="pb-2">
-                        <CardDescription>Total Recurring Items</CardDescription>
-                        <CardTitle className="text-3xl text-card-foreground">{items.filter(i => i.status === 'active').length}</CardTitle>
+                        <CardDescription className="text-muted-foreground font-medium tracking-wide text-xs uppercase">Total Recurring Items</CardDescription>
+                        <CardTitle className="text-3xl font-bold tracking-tight text-card-foreground">{items.filter(i => i.status === 'active').length}</CardTitle>
                     </CardHeader>
                 </Card>
-                <Card className="bg-gradient-to-br from-indigo-900/40 to-violet-900/40 border-indigo-500/30">
-                    <CardHeader className="pb-2">
-                        <CardDescription className="text-indigo-400">Monthly Expense Est.</CardDescription>
-                        <CardTitle className="text-3xl font-bold text-card-foreground tracking-tight">{fmt(-monthlyTotal)}</CardTitle>
+                <Card className="h-full min-h-[136px] relative overflow-hidden border-none bg-gradient-to-br from-primary/90 via-primary/80 to-accent/90 text-primary-foreground shadow-lg shadow-cyan-900/20">
+                    <div className="absolute inset-0 bg-white/5 opacity-50 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-white/20 via-white/5 to-transparent mix-blend-overlay"></div>
+                    <div className="absolute -top-6 -right-6 p-4 opacity-10 pointer-events-none transform rotate-12">
+                        <span className="text-[128px] font-bold leading-none select-none">{settings.currency_symbol || '$'}</span>
+                    </div>
+                    <CardHeader className="pb-2 relative z-10">
+                        <CardDescription className="text-primary-foreground/80 font-medium tracking-wide text-xs uppercase">Monthly Expense Est.</CardDescription>
+                        <CardTitle className="text-4xl font-bold text-primary-foreground tracking-tight drop-shadow-sm">{fmt(-monthlyTotal)}</CardTitle>
                     </CardHeader>
                 </Card>
             </div>
@@ -193,7 +197,7 @@ export default function Subscriptions() {
                     <RefreshCw className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                     <h3 className="text-lg font-medium text-muted-foreground">No recurring transactions</h3>
                     <p className="text-muted-foreground mt-1 max-w-sm mx-auto">Set up your subscriptions, bills, and paychecks to automate your budget.</p>
-                    <Button onClick={openNew} className="mt-6 bg-indigo-600 hover:bg-indigo-700 text-white">
+                    <Button onClick={openNew} className="mt-6 bg-primary text-primary-foreground hover:bg-primary/90">
                         <Plus className="mr-2 h-4 w-4" /> Add your first item
                     </Button>
                 </div>
@@ -418,13 +422,13 @@ export default function Subscriptions() {
                                     </Button>
                                     <div className="flex gap-2">
                                         <Button type="button" variant="ghost" className="text-muted-foreground hover:text-foreground" onClick={() => setOpenAdd(false)}>Cancel</Button>
-                                        <Button type="submit" className="bg-indigo-600 hover:bg-indigo-700 text-white">Save Changes</Button>
+                                        <Button type="submit" className="bg-primary text-primary-foreground hover:bg-primary/90">Save Changes</Button>
                                     </div>
                                 </div>
                             ) : (
                                 <>
                                     <Button type="button" variant="ghost" className="text-muted-foreground hover:text-foreground" onClick={() => setOpenAdd(false)}>Cancel</Button>
-                                    <Button type="submit" className="bg-indigo-600 hover:bg-indigo-700 text-white">Add Item</Button>
+                                    <Button type="submit" className="bg-primary text-primary-foreground hover:bg-primary/90">Add Item</Button>
                                 </>
                             )}
                         </DialogFooter>
@@ -434,3 +438,5 @@ export default function Subscriptions() {
         </div>
     );
 }
+
+

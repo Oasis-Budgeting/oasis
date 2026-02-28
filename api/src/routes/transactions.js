@@ -1,6 +1,10 @@
 import db from '../db/knex.js';
 import { parse } from 'csv-parse/sync';
 import authenticate from '../middleware/auth.js';
+import fs from 'fs/promises';
+import { createReadStream } from 'fs';
+import path from 'path';
+import { randomUUID } from 'crypto';
 
 export default async function transactionRoutes(fastify) {
     fastify.addHook('preHandler', authenticate);
@@ -14,10 +18,12 @@ export default async function transactionRoutes(fastify) {
             .select(
                 'transactions.*',
                 'accounts.name as account_name',
-                'categories.name as category_name'
+                'categories.name as category_name',
+                'category_groups.name as group_name'
             )
             .leftJoin('accounts', 'transactions.account_id', 'accounts.id')
             .leftJoin('categories', 'transactions.category_id', 'categories.id')
+            .leftJoin('category_groups', 'categories.group_id', 'category_groups.id')
             .where('transactions.user_id', userId)
             .orderBy('transactions.date', 'desc')
             .orderBy('transactions.id', 'desc');
@@ -29,6 +35,18 @@ export default async function transactionRoutes(fastify) {
 
         const total = await query.clone().count('* as count').first();
         const transactions = await query.limit(limit).offset(offset);
+
+        // Attach attachments metadata manually
+        if (transactions.length > 0) {
+            const txIds = transactions.map(t => t.id);
+            const attachments = await db('attachments')
+                .whereIn('transaction_id', txIds)
+                .select('id', 'transaction_id', 'file_name', 'mime_type', 'size_bytes');
+
+            transactions.forEach(t => {
+                t.attachments = attachments.filter(a => a.transaction_id === t.id);
+            });
+        }
 
         return { data: transactions, total: total.count };
     });
@@ -133,7 +151,6 @@ export default async function transactionRoutes(fastify) {
         return { success: true };
     });
 
-    // CSV Import
     fastify.post('/import', async (request, reply) => {
         const data = await request.file();
         const userId = request.user.id;
@@ -141,45 +158,166 @@ export default async function transactionRoutes(fastify) {
 
         const buffer = await data.toBuffer();
         const csvContent = buffer.toString('utf-8');
+        const records = parse(csvContent, { columns: true, skip_empty_lines: true });
 
-        const records = parse(csvContent, {
-            columns: true,
-            skip_empty_lines: true,
-            trim: true
-        });
+        // Fetch all active rules for this user
+        const rules = await db('transaction_rules')
+            .where({ user_id: userId })
+            .orderBy('priority', 'desc');
 
-        const { account_id } = request.query;
-        if (!account_id) return reply.code(400).send({ error: 'account_id query param required' });
-
-        const account = await db('accounts').where({ id: account_id, user_id: userId }).first();
-        if (!account) return reply.code(403).send({ error: 'Invalid account_id' });
+        // Extremely basic import that maps exact column names or standard fallbacks
+        // Assume columns: date, payee, memo, amount
+        const defaultAccount = await db('accounts').where('user_id', userId).first();
+        if (!defaultAccount) return reply.code(400).send({ error: 'Create an account first' });
 
         let imported = 0;
         for (const row of records) {
-            const date = row.Date || row.date;
-            const payee = row.Payee || row.payee || row.Description || row.description || '';
-            const memo = row.Memo || row.memo || row.Notes || row.notes || '';
-            let amount = parseFloat(row.Amount || row.amount || 0);
+            // Find columns flexibly
+            const keys = Object.keys(row);
+            const dateKey = keys.find(k => k.toLowerCase().includes('date')) || keys[0];
+            const amountKey = keys.find(k => k.toLowerCase().includes('amount')) || keys.find(k => !isNaN(parseFloat(row[k])));
+            const payeeKey = keys.find(k => k.toLowerCase().includes('payee') || k.toLowerCase().includes('description')) || keys[1];
 
-            // Handle separate inflow/outflow columns
-            if (row.Inflow || row.inflow) amount = parseFloat(row.Inflow || row.inflow);
-            if (row.Outflow || row.outflow) amount = -Math.abs(parseFloat(row.Outflow || row.outflow));
+            if (!dateKey || !amountKey) continue;
 
-            if (date && !isNaN(amount)) {
-                await db('transactions').insert({
-                    user_id: userId,
-                    account_id: parseInt(account_id),
-                    date,
-                    payee,
-                    memo,
-                    amount
+            let amountStr = row[amountKey].replace(/[^0-9.-]+/g, "");
+            let amount = parseFloat(amountStr);
+            if (isNaN(amount)) continue;
+
+            const dateStr = row[dateKey];
+            const d = new Date(dateStr);
+            const date = isNaN(d) ? new Date().toISOString().split('T')[0] : d.toISOString().split('T')[0];
+
+            let finalPayee = row[payeeKey] ? row[payeeKey].substring(0, 255) : 'Imported';
+            let finalCategoryId = null;
+            let finalCleared = true;
+
+            // Apply Rules Engine
+            for (const rule of rules) {
+                let matchTarget = '';
+                if (rule.match_field === 'payee') matchTarget = finalPayee.toLowerCase();
+                if (rule.match_field === 'amount') matchTarget = amount.toString();
+
+                const matchVal = rule.match_value.toLowerCase();
+                let isMatch = false;
+
+                if (rule.match_type === 'contains' && matchTarget.includes(matchVal)) isMatch = true;
+                if (rule.match_type === 'equals' && matchTarget === matchVal) isMatch = true;
+                if (rule.match_type === 'starts_with' && matchTarget.startsWith(matchVal)) isMatch = true;
+
+                if (rule.match_field === 'amount') {
+                    const amtTarget = Math.abs(amount);
+                    const amtVal = parseFloat(rule.match_value);
+                    if (rule.match_type === 'less_than' && amtTarget < amtVal) isMatch = true;
+                    if (rule.match_type === 'greater_than' && amtTarget > amtVal) isMatch = true;
+                }
+
+                if (isMatch) {
+                    if (rule.set_category_id) finalCategoryId = rule.set_category_id;
+                    if (rule.set_payee) finalPayee = rule.set_payee;
+                    if (rule.set_cleared !== null) finalCleared = rule.set_cleared ? true : false;
+                }
+            }
+
+            await db('transactions').insert({
+                user_id: userId,
+                account_id: defaultAccount.id,
+                date: date,
+                payee: finalPayee,
+                amount: amount,
+                category_id: finalCategoryId,
+                cleared: finalCleared
+            });
+            imported++;
+        }
+
+        return { message: `Successfully imported ${imported} transactions.`, count: imported };
+    });
+
+    // Upload Attachment to Transaction
+    fastify.post('/:id/attachments', async (request, reply) => {
+        // Verify transaction ownership
+        const tx = await db('transactions')
+            .join('accounts', 'transactions.account_id', 'accounts.id')
+            .where({ 'transactions.id': request.params.id, 'accounts.user_id': request.user.id })
+            .first();
+
+        if (!tx) return reply.code(404).send({ error: 'Transaction not found or unauthorized' });
+
+        const parts = request.parts();
+        const uploadedFiles = [];
+
+        // Ensure upload directory exists
+        const uploadDir = path.join(process.cwd(), 'data', 'uploads', request.user.id.toString());
+        await fs.mkdir(uploadDir, { recursive: true });
+
+        for await (const part of parts) {
+            if (part.type === 'file') {
+                const uniqueFilename = `${randomUUID()}-${part.filename}`;
+                const filePath = path.join(uploadDir, uniqueFilename);
+                const relativePath = path.join(request.user.id.toString(), uniqueFilename);
+
+                // Write to disk
+                const buffer = await part.toBuffer();
+                await fs.writeFile(filePath, buffer);
+
+                // Insert into DB
+                const [id] = await db('attachments').insert({
+                    user_id: request.user.id,
+                    transaction_id: tx.id,
+                    file_name: part.filename,
+                    file_path: relativePath,
+                    mime_type: part.mimetype,
+                    size_bytes: buffer.length
                 });
-                imported++;
+
+                const attachment = await db('attachments').where({ id }).first();
+                uploadedFiles.push(attachment);
             }
         }
 
-        await updateAccountBalance(parseInt(account_id), userId);
-        return { imported, total: records.length };
+        return reply.code(201).send(uploadedFiles);
+    });
+
+    // Download/View Attachment
+    fastify.get('/attachments/:attachmentId', async (request, reply) => {
+        const attachment = await db('attachments')
+            .where({ id: request.params.attachmentId, user_id: request.user.id })
+            .first();
+
+        if (!attachment) return reply.code(404).send({ error: 'Attachment not found' });
+
+        const absolutePath = path.join(process.cwd(), 'data', 'uploads', attachment.file_path);
+        try {
+            await fs.access(absolutePath);
+            reply.header('Content-Type', attachment.mime_type);
+            reply.header('Content-Disposition', `inline; filename="${attachment.file_name}"`);
+            return reply.send(createReadStream(absolutePath));
+        } catch {
+            return reply.code(404).send({ error: 'File missing from disk' });
+        }
+    });
+
+    // Delete Attachment
+    fastify.delete('/attachments/:attachmentId', async (request, reply) => {
+        const attachment = await db('attachments')
+            .where({ id: request.params.attachmentId, user_id: request.user.id })
+            .first();
+
+        if (!attachment) return reply.code(404).send({ error: 'Attachment not found' });
+
+        // Delete from DB
+        await db('attachments').where({ id: attachment.id }).del();
+
+        // Delete from Disk
+        const absolutePath = path.join(process.cwd(), 'data', 'uploads', attachment.file_path);
+        try {
+            await fs.unlink(absolutePath);
+        } catch (e) {
+            request.log.warn(`Failed to delete file from disk: ${absolutePath}`);
+        }
+
+        return { success: true };
     });
 }
 

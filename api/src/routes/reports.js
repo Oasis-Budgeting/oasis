@@ -46,27 +46,85 @@ export default async function reportRoutes(fastify) {
     return data.reverse();
   });
 
-  // Net worth over time (for line chart)
+  // Net worth over time (for Area Chart)
   fastify.get('/net-worth', async (request) => {
     const months = parseInt(request.query.months || '12');
     const userId = request.user.id;
 
-    const data = await db.raw(`
-      WITH months AS (
-        SELECT DISTINCT substr(date, 1, 7) as month
-        FROM transactions
-        WHERE user_id = ?
-        ORDER BY month DESC
-        LIMIT ?
-      )
-      SELECT
-        m.month,
-        (SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE substr(date, 1, 7) <= m.month AND user_id = ?) as net_worth
-      FROM months m
-      ORDER BY m.month ASC
-    `, [userId, months, userId]);
+    // To compute historical net worth accurately:
+    // 1. Get current balances of all accounts (assets = positive balance accounts, liabilities = credit cards/loans)
+    // 2. Walk backwards month by month, subtracting the net transaction delta for that month to find the starting balance of the previous month.
 
-    return data;
+    // Step 1: Current Balances
+    const accounts = await db('accounts').where('user_id', userId);
+    let currentAssets = 0;
+    let currentLiabilities = 0;
+
+    accounts.forEach(acc => {
+      const bal = parseFloat(acc.balance || 0);
+      // Types: checking, savings, cash, investment (usually assets) | credit_card, loan (liabilities)
+      if (acc.type === 'credit_card' || acc.type === 'loan' || bal < 0) {
+        currentLiabilities += Math.abs(bal);
+      } else {
+        currentAssets += bal;
+      }
+    });
+
+    // Step 2: Get net flow per month
+    // A positive flow means balance went up. So to go back in time, we SUBTRACT the flow.
+    const flows = await db.raw(`
+      SELECT 
+        substr(transactions.date, 1, 7) as month,
+        accounts.type as account_type,
+        SUM(amount) as net_flow
+      FROM transactions
+      JOIN accounts ON transactions.account_id = accounts.id
+      WHERE transactions.user_id = ?
+      GROUP BY substr(transactions.date, 1, 7), accounts.type
+      ORDER BY month DESC
+    `, [userId]);
+
+    const history = [];
+    const now = new Date();
+
+    let runnerAssets = currentAssets;
+    let runnerLiabilities = currentLiabilities;
+
+    // Build the last N months array (e.g. 2026-02, 2026-01, 2025-12...)
+    for (let i = 0; i < months; i++) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const yyyy = d.getFullYear();
+      const mm = String(d.getMonth() + 1).padStart(2, '0');
+      const monthStr = `${yyyy}-${mm}`;
+
+      // Push current runner state for this month
+      // Wait, the "current balance" is the balance at the END of the month.
+      history.unshift({
+        month: monthStr,
+        assets: parseFloat(runnerAssets.toFixed(2)),
+        liabilities: parseFloat(runnerLiabilities.toFixed(2)),
+        net_worth: parseFloat((runnerAssets - runnerLiabilities).toFixed(2))
+      });
+
+      // To prepare the runner for the PREVIOUS month, we subtract THIS month's flow.
+      const monthFlows = flows.filter(f => f.month === monthStr);
+      monthFlows.forEach(f => {
+        const flow = parseFloat(f.net_flow);
+        if (f.account_type === 'credit_card' || f.account_type === 'loan') {
+          // If I spent $100 on a CC (flow = -100), the CC balance (liability) went UP by 100.
+          // So to go backwards, if CC balance is 500 now, before this month it was 400.
+          // Flow is -100. CC balance = 500. CC balance backwards = 500 - Math.abs(-100) = 400.
+          // If I paid $100 (flow = +100), liability went DOWN by 100. Backwards = 500 + 100 = 600.
+          runnerLiabilities += flow;
+        } else {
+          // Asset account: If I got paid $1000 (flow = +1000), balance went up. 
+          // Backwards = Current Asset - 1000
+          runnerAssets -= flow;
+        }
+      });
+    }
+
+    return history;
   });
 
   // Budget vs Actual for a month (for horizontal bar chart)
@@ -142,5 +200,53 @@ export default async function reportRoutes(fastify) {
       data: Object.values(monthMap).sort((a, b) => a.month.localeCompare(b.month)),
       categories: [...allCategories]
     };
+  });
+
+  // Top Payees Leaderboard (for bar chart or list)
+  fastify.get('/payee-leaderboard', async (request) => {
+    const { from, to, limit = 10 } = request.query;
+    const userId = request.user.id;
+
+    let query = db('transactions')
+      .select('payee', db.raw('SUM(ABS(amount)) as total_spent'), db.raw('COUNT(id) as transaction_count'))
+      .where('user_id', userId)
+      .where('amount', '<', 0)
+      .whereNull('transfer_account_id')
+      .groupBy('payee')
+      .orderBy('total_spent', 'desc')
+      .limit(parseInt(limit));
+
+    if (from) query = query.where('date', '>=', from);
+    if (to) query = query.where('date', '<=', to);
+
+    return await query;
+  });
+
+  // Spending Heatmap (for Calendar heatmap)
+  fastify.get('/spending-heatmap', async (request) => {
+    const months = parseInt(request.query.months || '12');
+    const userId = request.user.id;
+
+    // Get daily spend sums for the last X months
+    const data = await db.raw(`
+      SELECT
+        date,
+        SUM(ABS(amount)) as total,
+        COUNT(id) as count
+      FROM transactions
+      WHERE user_id = ?
+        AND amount < 0
+        AND transfer_account_id IS NULL
+        AND date >= date('now', '-' || ? || ' months')
+      GROUP BY date
+      ORDER BY date ASC
+    `, [userId, months]);
+
+    // Fastify / SQLite driver might return differently formatted arrays, reshape simple array
+    return data.map(row => ({
+      date: row.date,
+      total: parseFloat(row.total || 0),
+      count: parseInt(row.count || 0)
+    }));
   });
 }

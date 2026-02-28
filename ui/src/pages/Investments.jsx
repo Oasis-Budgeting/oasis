@@ -205,14 +205,14 @@ export default function Investments() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <Card className="bg-gradient-to-br from-indigo-500/90 via-purple-600/90 to-blue-600/90 border-none shadow-lg shadow-indigo-500/20 text-white relative overflow-hidden">
+                <Card className="relative overflow-hidden border-none bg-gradient-to-br from-primary/90 via-primary/80 to-accent/90 text-primary-foreground shadow-lg shadow-cyan-900/20">
                     <div className="absolute inset-0 bg-white/5 opacity-50 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-white/20 via-white/5 to-transparent mix-blend-overlay"></div>
                     <div className="absolute -top-6 -right-6 p-4 opacity-10 pointer-events-none transform rotate-12">
                         <span className="text-[128px] font-bold leading-none select-none">{settings.currency_symbol || '$'}</span>
                     </div>
                     <CardHeader className="pb-2 relative z-10">
-                        <CardDescription className="text-indigo-100 font-medium tracking-wide text-xs uppercase">Total Portfolio Value</CardDescription>
-                        <CardTitle className="text-4xl font-bold text-white tracking-tight drop-shadow-sm">{fmt(totalValue)}</CardTitle>
+                        <CardDescription className="text-primary-foreground/80 font-medium tracking-wide text-xs uppercase">Total Portfolio Value</CardDescription>
+                        <CardTitle className="text-4xl font-bold text-primary-foreground tracking-tight drop-shadow-sm">{fmt(totalValue)}</CardTitle>
                     </CardHeader>
                 </Card>
                 <Card className="bg-card border-border shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
@@ -269,7 +269,7 @@ export default function Investments() {
                                         <CardTitle className="text-xl text-card-foreground font-bold tracking-tight flex items-center gap-2">
                                             {item.ticker}
                                             {item.sip_enabled ? (
-                                                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-400 uppercase tracking-wider">SIP</span>
+                                                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-primary/20 text-primary uppercase tracking-wider">SIP</span>
                                             ) : null}
                                         </CardTitle>
                                         <CardDescription className="text-muted-foreground line-clamp-1" title={item.name}>
@@ -314,7 +314,7 @@ export default function Investments() {
                                     {/* SIP Info */}
                                     {item.sip_enabled && (
                                         <div className="flex items-center gap-2 text-xs text-muted-foreground py-2 border-t border-border">
-                                            <CalendarPlus className="w-3.5 h-3.5 text-indigo-400" />
+                                            <CalendarPlus className="w-3.5 h-3.5 text-primary" />
                                             <span>SIP: <span className="text-foreground/80 font-medium">{fmt(item.sip_amount)}</span> {item.sip_frequency} on day {item.sip_day}</span>
                                         </div>
                                     )}
@@ -347,7 +347,7 @@ export default function Investments() {
                                                     {txns.map(t => (
                                                         <div key={t.id} className="flex items-center justify-between text-xs py-2 px-3 rounded-xl hover:bg-muted/30 group transition-colors">
                                                             <div className="flex items-center gap-3">
-                                                                <span className={`font-semibold uppercase px-1.5 py-0.5 rounded text-[10px] ${t.type === 'sell' ? 'bg-rose-500/10 text-rose-500' : t.type === 'sip' ? 'bg-indigo-500/10 text-indigo-400' : 'bg-emerald-500/10 text-emerald-500'}`}>
+                                                                <span className={`font-semibold uppercase px-1.5 py-0.5 rounded text-[10px] ${t.type === 'sell' ? 'bg-rose-500/10 text-rose-500' : t.type === 'sip' ? 'bg-primary/10 text-primary' : 'bg-emerald-500/10 text-emerald-500'}`}>
                                                                     {t.type}
                                                                 </span>
                                                                 <span className="text-muted-foreground">{new Date(t.date).toLocaleDateString()}</span>
@@ -623,3 +623,4 @@ export default function Investments() {
         </div>
     );
 }
+

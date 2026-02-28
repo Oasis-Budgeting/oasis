@@ -92,7 +92,7 @@ export default async function categoryRoutes(fastify) {
 
     // Update category
     fastify.put('/categories/:id', async (request, reply) => {
-        const { name, group_id, sort_order, hidden, goal_type, goal_amount, goal_target_date } = request.body;
+        const { name, group_id, sort_order, hidden, goal_type, goal_amount, goal_target_date, rollover_strategy, sweep_target_id } = request.body;
         const updates = {};
         if (name !== undefined) updates.name = name;
         if (sort_order !== undefined) updates.sort_order = sort_order;
@@ -100,6 +100,8 @@ export default async function categoryRoutes(fastify) {
         if (goal_type !== undefined) updates.goal_type = goal_type;
         if (goal_amount !== undefined) updates.goal_amount = goal_amount;
         if (goal_target_date !== undefined) updates.goal_target_date = goal_target_date;
+        if (rollover_strategy !== undefined) updates.rollover_strategy = rollover_strategy;
+        if (sweep_target_id !== undefined) updates.sweep_target_id = sweep_target_id;
 
         if (group_id !== undefined) {
             // Verify group belongs to user

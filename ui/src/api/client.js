@@ -53,6 +53,31 @@ export const createCategory = (data) => request('/categories', { method: 'POST',
 export const updateCategory = (id, data) => request(`/categories/${id}`, { method: 'PUT', body: data });
 export const deleteCategory = (id) => request(`/categories/${id}`, { method: 'DELETE' });
 
+// Data Export
+export const getExportTransactionsUrl = (query = {}) => {
+    const qs = new URLSearchParams({ ...query, token: getAuthToken() }).toString();
+    return `${BASE}/transactions/export?${qs}`;
+};
+
+// AI Advisor & LLM Integrations
+export const getAiModels = (provider = 'ollama', baseUrl) =>
+    request(`/ai/models?provider=${provider}&base_url=${encodeURIComponent(baseUrl || '')}`);
+
+export const chatWithAi = (messages, provider, baseUrl, model, includeContext = true) =>
+    request('/ai/chat', {
+        method: 'POST',
+        body: { messages, provider, base_url: baseUrl, model, include_context: includeContext }
+    });
+
+export const getFinancialExport = async (sections = 'all', format = 'markdown', months = 6) => {
+    const resp = await fetch(`${BASE}/ai/export-data?sections=${sections}&format=${format}&months=${months}`, {
+        headers: { 'Authorization': `Bearer ${getAuthToken()}` }
+    });
+    if (!resp.ok) throw new Error('Export failed');
+    if (format === 'json') return resp.json();
+    return resp.text();
+};
+
 // Transactions
 export const getTransactions = (params = {}) => {
     const qs = new URLSearchParams(params).toString();
@@ -61,6 +86,27 @@ export const getTransactions = (params = {}) => {
 export const createTransaction = (data) => request('/transactions', { method: 'POST', body: data });
 export const updateTransaction = (id, data) => request(`/transactions/${id}`, { method: 'PUT', body: data });
 export const deleteTransaction = (id) => request(`/transactions/${id}`, { method: 'DELETE' });
+
+export const uploadAttachment = async (transactionId, file) => {
+    const token = getAuthToken();
+    const headers = {};
+    if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    const form = new FormData();
+    form.append('file', file);
+
+    const res = await fetch(`${BASE}/transactions/${transactionId}/attachments`, {
+        method: 'POST',
+        headers,
+        body: form
+    });
+    if (!res.ok) throw new Error('Failed to upload attachment');
+    return res.json();
+};
+
+export const deleteAttachment = (attachmentId) => request(`/transactions/attachments/${attachmentId}`, { method: 'DELETE' });
 
 export const importCSV = async (file, accountId) => {
     const token = getAuthToken();
@@ -90,19 +136,26 @@ export const importCSV = async (file, accountId) => {
 
 // Budget
 export const getBudget = (month) => request(`/budget/${month}`);
-export const getBudgetSummary = (month) => request(`/budget/summary/${month}`);
+export const getBudgetSummary = (month) => request(`/budgets/summary/${month}`);
+export const getBudgetDetails = (month) => request(`/budgets/details/${month}`);
+export const allocateBudget = (data) => request('/budgets/allocate', { method: 'POST', body: JSON.stringify(data) });
 export const assignBudget = (month, categoryId, assigned) =>
     request(`/budget/${month}/${categoryId}`, { method: 'PUT', body: { assigned } });
 
 // Reports
-export const getSpendingByCategory = (params = {}) => {
-    const qs = new URLSearchParams(params).toString();
+export const getSpendingByCategory = (query = {}) => {
+    const qs = new URLSearchParams(query).toString();
     return request(`/reports/spending-by-category?${qs}`);
 };
-export const getIncomeVsExpense = (months = 12) => request(`/reports/income-vs-expense?months=${months}`);
-export const getNetWorth = (months = 12) => request(`/reports/net-worth?months=${months}`);
+export const getIncomeVsExpense = (months) => request(`/reports/income-vs-expense?months=${months || 12}`);
+export const getNetWorth = (months = 6) => request(`/reports/net-worth?months=${months}`);
 export const getBudgetVsActual = (month) => request(`/reports/budget-vs-actual/${month}`);
 export const getSpendingTrend = (months = 6) => request(`/reports/spending-trend?months=${months}`);
+export const getPayeeLeaderboard = (query = {}) => {
+    const qs = new URLSearchParams(query).toString();
+    return request(`/reports/payee-leaderboard?${qs}`);
+};
+export const getSpendingHeatmap = (months = 12) => request(`/reports/spending-heatmap?months=${months}`);
 
 // Settings
 export const getSettings = () => request('/settings');
@@ -129,11 +182,6 @@ export const copyBudget = (month) =>
 export const moveMoney = (from_category_id, to_category_id, amount, month) =>
     request('/settings/move-money', { method: 'POST', body: { from_category_id, to_category_id, amount, month } });
 
-// Export
-export const getExportTransactionsUrl = () => {
-    const token = getAuthToken();
-    return `/api/settings/export/transactions?token=${token}`; // Modify the backend to accept token as query param for exports
-};
 
 // Subscriptions & Recurring Transactions
 export const getSubscriptions = () => request('/subscriptions');
@@ -172,18 +220,9 @@ export const getInsights = () => request('/insights');
 export const getCsvMappings = () => request('/settings/csv-mappings');
 export const saveCsvMapping = (data) => request('/settings/csv-mappings', { method: 'POST', body: data });
 
-// Export
-export const getFinancialExport = async (sections = 'all', format = 'markdown', months = 6) => {
-    const resp = await fetch(`${BASE}/export?sections=${sections}&format=${format}&months=${months}`, {
-        headers: { 'Authorization': `Bearer ${getAuthToken()}` }
-    });
-    if (!resp.ok) throw new Error('Export failed');
-    if (format === 'json') return resp.json();
-    return resp.text();
-};
+// Rules
+export const getRules = () => request('/rules');
+export const createRule = (data) => request('/rules', { method: 'POST', body: data });
+export const updateRule = (id, data) => request(`/rules/${id}`, { method: 'PUT', body: data });
+export const deleteRule = (id) => request(`/rules/${id}`, { method: 'DELETE' });
 
-// AI
-export const getAiModels = (provider = 'ollama', baseUrl) =>
-    request(`/ai/models?provider=${provider}&base_url=${encodeURIComponent(baseUrl || '')}`);
-export const chatWithAi = (messages, provider, baseUrl, model, includeContext = true) =>
-    request('/ai/chat', { method: 'POST', body: { messages, provider, base_url: baseUrl, model, include_context: includeContext } });

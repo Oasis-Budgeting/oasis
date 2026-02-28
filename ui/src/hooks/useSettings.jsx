@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { getSettings, updateSettings as apiUpdateSettings } from '../api/client.js';
+import { useAuth } from '../context/AuthContext.jsx';
 
 const CURRENCIES = [
     { code: 'USD', symbol: '$', name: 'US Dollar', locale: 'en-US' },
@@ -27,6 +28,7 @@ const CURRENCIES = [
 const SettingsContext = createContext(null);
 
 export function SettingsProvider({ children }) {
+    const { user } = useAuth();
     const defaults = {
         currency: 'USD',
         locale: 'en-US',
@@ -38,10 +40,19 @@ export function SettingsProvider({ children }) {
     const [loaded, setLoaded] = useState(false);
 
     useEffect(() => {
+        if (!user) {
+            setSettings(defaults);
+            setLoaded(true);
+            return;
+        }
         getSettings()
-            .then(s => { setSettings(prev => ({ ...defaults, ...prev, ...s })); setLoaded(true); })
+            .then(s => {
+                setSettings(prev => ({ ...defaults, ...prev, ...s }));
+                if (s.theme) document.documentElement.setAttribute('data-theme', s.theme);
+                setLoaded(true);
+            })
             .catch(() => setLoaded(true));
-    }, []);
+    }, [user]);
 
     const updateSettings = useCallback(async (updates) => {
         const newSettings = await apiUpdateSettings(updates);

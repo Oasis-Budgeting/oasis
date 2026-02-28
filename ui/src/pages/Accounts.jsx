@@ -21,7 +21,7 @@ const TYPE_COLORS = {
     savings: 'text-emerald-600 bg-emerald-400/10',
     credit_card: 'text-orange-400 bg-orange-400/10',
     cash: 'text-yellow-400 bg-yellow-400/10',
-    investment: 'text-purple-400 bg-purple-400/10',
+    investment: 'text-primary bg-primary/10',
 };
 
 export default function Accounts() {
@@ -103,7 +103,7 @@ export default function Accounts() {
                         {fmt(totalBalance)}
                     </div>
                 </div>
-                <Button onClick={openCreate} className="bg-indigo-600 hover:bg-indigo-700 text-white">
+                <Button onClick={openCreate} className="bg-primary text-primary-foreground hover:bg-primary/90">
                     <Plus className="mr-2 h-4 w-4" /> Add Account
                 </Button>
             </div>
@@ -199,7 +199,7 @@ export default function Accounts() {
                     </div>
                     <h3 className="text-lg font-semibold text-foreground/80 mb-2">No accounts yet</h3>
                     <p className="text-muted-foreground max-w-sm mb-6">Add your first checking or savings account to start tracking your budget and transactions.</p>
-                    <Button onClick={openCreate} className="bg-indigo-600 hover:bg-indigo-700">
+                    <Button onClick={openCreate} className="bg-primary hover:bg-primary/90">
                         <Plus className="mr-2 h-4 w-4" /> Add Account
                     </Button>
                 </div>
@@ -218,7 +218,7 @@ export default function Accounts() {
                             <Label htmlFor="name" className="text-muted-foreground text-xs uppercase tracking-wider">Account Name</Label>
                             <Input
                                 id="name"
-                                className="bg-card border-border text-card-foreground placeholder:text-muted-foreground focus-visible:ring-indigo-500"
+                                className="bg-card border-border text-card-foreground placeholder:text-muted-foreground focus-visible:ring-primary"
                                 value={form.name}
                                 onChange={e => setForm({ ...form, name: e.target.value })}
                                 placeholder="e.g., Main Checking"
@@ -232,7 +232,7 @@ export default function Accounts() {
                                 <Label htmlFor="type" className="text-muted-foreground text-xs uppercase tracking-wider">Type</Label>
                                 <select
                                     id="type"
-                                    className="flex h-10 w-full rounded-xl border border-border bg-card px-3 py-2 text-sm text-card-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                                    className="flex h-10 w-full rounded-xl border border-border bg-card px-3 py-2 text-sm text-card-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                                     value={form.type}
                                     onChange={e => setForm({ ...form, type: e.target.value })}
                                 >
@@ -251,7 +251,7 @@ export default function Accounts() {
                                         id="balance"
                                         type="number"
                                         step="0.01"
-                                        className="bg-card border-border text-card-foreground placeholder:text-muted-foreground focus-visible:ring-indigo-500 font-mono"
+                                        className="bg-card border-border text-card-foreground placeholder:text-muted-foreground focus-visible:ring-primary font-mono"
                                         value={form.balance}
                                         onChange={e => setForm({ ...form, balance: e.target.value })}
                                         placeholder="0.00"
@@ -264,7 +264,7 @@ export default function Accounts() {
                             <input
                                 type="checkbox"
                                 id="on_budget"
-                                className="h-4 w-4 rounded border-border bg-card text-indigo-600 focus:ring-indigo-500 focus:ring-offset-slate-950"
+                                className="h-4 w-4 rounded border-border bg-card text-primary focus:ring-primary focus:ring-offset-slate-950"
                                 checked={form.on_budget}
                                 onChange={e => setForm({ ...form, on_budget: e.target.checked })}
                             />
@@ -277,7 +277,7 @@ export default function Accounts() {
                             <Button type="button" variant="ghost" className="text-muted-foreground hover:text-foreground hover:bg-secondary" onClick={() => setShowModal(false)}>
                                 Cancel
                             </Button>
-                            <Button type="submit" className="bg-indigo-600 hover:bg-indigo-700 text-white">
+                            <Button type="submit" className="bg-primary text-primary-foreground hover:bg-primary/90">
                                 {editing ? 'Save Changes' : 'Create Account'}
                             </Button>
                         </DialogFooter>
@@ -304,7 +304,7 @@ export default function Accounts() {
                                 id="reconcileBalance"
                                 type="number"
                                 step="0.01"
-                                className="bg-card border-border text-card-foreground focus-visible:ring-indigo-500 font-mono text-lg"
+                                className="bg-card border-border text-card-foreground focus-visible:ring-primary font-mono text-lg"
                                 value={reconcileBalance}
                                 onChange={e => setReconcileBalance(e.target.value)}
                                 autoFocus
@@ -329,7 +329,7 @@ export default function Accounts() {
                         <Button variant="ghost" className="text-muted-foreground hover:text-foreground hover:bg-secondary" onClick={() => setShowReconcile(null)}>
                             Cancel
                         </Button>
-                        <Button className="bg-indigo-600 hover:bg-indigo-700 text-white" onClick={handleReconcile}>
+                        <Button className="bg-primary text-primary-foreground hover:bg-primary/90" onClick={handleReconcile}>
                             Finish Reconciliation
                         </Button>
                     </DialogFooter>
@@ -338,3 +338,5 @@ export default function Accounts() {
         </div>
     );
 }
+
+

@@ -145,4 +145,21 @@ export default async function aiRoutes(fastify) {
             });
         }
     });
+
+    // Handle explicit Export Data requests
+    fastify.get('/export-data', async (request, reply) => {
+        const userId = request.user.id;
+        const { sections = 'all', format = 'markdown', months = '6' } = request.query;
+
+        try {
+            const md = await buildFinancialContext(userId, sections, parseInt(months));
+            if (format === 'json') {
+                return { context: md };
+            }
+            reply.header('Content-Type', 'text/markdown; charset=utf-8');
+            return md;
+        } catch (error) {
+            return reply.code(500).send({ error: 'Failed to build financial context' });
+        }
+    });
 }

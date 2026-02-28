@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
-import { Plus, Edit, Trash2, Upload, CheckCircle, AlertCircle, ArrowUpDown, Search } from 'lucide-react';
-import { getTransactions, getAccounts, getCategoryGroups, createTransaction, updateTransaction, deleteTransaction, importCSV, getPayeeSuggestions } from '../api/client.js';
+import { Plus, Edit, Trash2, Upload, CheckCircle, AlertCircle, ArrowUpDown, Search, Paperclip, FileText, Image as ImageIcon, X, Loader2 } from 'lucide-react';
+import { getTransactions, getAccounts, getCategoryGroups, createTransaction, updateTransaction, deleteTransaction, importCSV, getPayeeSuggestions, uploadAttachment, deleteAttachment } from '../api/client.js';
 import { useSettings } from '../hooks/useSettings.jsx';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -98,8 +98,10 @@ export default function Transactions() {
     const [showModal, setShowModal] = useState(false);
     const [showImport, setShowImport] = useState(false);
     const [editing, setEditing] = useState(null);
-    const [form, setForm] = useState({ account_id: '', category_id: '', date: '', payee: '', amount: '', memo: '', cleared: false });
+    const [form, setForm] = useState({ account_id: '', category_id: '', date: '', payee: '', amount: '', memo: '', cleared: false, attachments: [] });
+    const [isUploading, setIsUploading] = useState(false);
     const [importAccountId, setImportAccountId] = useState('');
+    const fileInputRef = useRef(null);
 
     const loadData = async () => {
         const params = {};
@@ -132,7 +134,7 @@ export default function Transactions() {
             account_id: accounts[0]?.id || '',
             category_id: '',
             date: new Date().toISOString().split('T')[0],
-            payee: '', amount: '', memo: '', cleared: false
+            payee: '', amount: '', memo: '', cleared: false, attachments: []
         });
         setShowModal(true);
     };
@@ -146,9 +148,39 @@ export default function Transactions() {
             payee: txn.payee || '',
             amount: txn.amount,
             memo: txn.memo || '',
-            cleared: !!txn.cleared
+            cleared: !!txn.cleared,
+            attachments: txn.attachments || []
         });
         setShowModal(true);
+    };
+
+    const handleFileUpload = async (e) => {
+        const file = e.target.files?.[0];
+        if (!file || !editing) return;
+
+        try {
+            setIsUploading(true);
+            const uploaded = await uploadAttachment(editing.id, file);
+            setForm(prev => ({ ...prev, attachments: [...prev.attachments, ...uploaded] }));
+            loadData(); // refresh background table
+        } catch (err) {
+            console.error('Failed to upload', err);
+            alert('Upload failed. Note: You must save the transaction before attaching files.');
+        } finally {
+            setIsUploading(false);
+            if (fileInputRef.current) fileInputRef.current.value = '';
+        }
+    };
+
+    const handleFileDelete = async (attachmentId) => {
+        if (!confirm('Delete this attachment permanently?')) return;
+        try {
+            await deleteAttachment(attachmentId);
+            setForm(prev => ({ ...prev, attachments: prev.attachments.filter(a => a.id !== attachmentId) }));
+            loadData();
+        } catch (err) {
+            console.error('Failed to delete', err);
+        }
     };
 
     const handleSubmit = async (e) => {
@@ -272,7 +304,17 @@ export default function Transactions() {
                                             </Button>
                                         </TableCell>
                                         <TableCell className="text-muted-foreground font-medium py-3 whitespace-nowrap">{txn.date}</TableCell>
-                                        <TableCell className="text-foreground/80 font-semibold py-3">{txn.payee || '—'}</TableCell>
+                                        <TableCell className="text-foreground/80 font-semibold py-3">
+                                            <div className="flex items-center gap-2">
+                                                {txn.payee || '—'}
+                                                {txn.attachments?.length > 0 && (
+                                                    <div className="flex items-center text-muted-foreground/60" title={`${txn.attachments.length} attachment(s)`}>
+                                                        <Paperclip className="h-3.5 w-3.5" />
+                                                        <span className="text-[10px] ml-0.5 font-medium">{txn.attachments.length}</span>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </TableCell>
                                         <TableCell className="text-muted-foreground text-sm py-3">
                                             <div className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-muted text-muted-foreground">
                                                 {txn.category_name || 'Uncategorized'}
@@ -433,11 +475,11 @@ export default function Transactions() {
                             />
                         </div>
 
-                        <div className="flex items-center space-x-2 pt-2">
+                        <div className="flex items-center space-x-2 pt-2 pb-2">
                             <input
                                 type="checkbox"
                                 id="cleared"
-                                className="h-4 w-4 rounded border-border bg-card text-indigo-600 focus:ring-indigo-500 focus:ring-offset-background"
+                                className="h-4 w-4 rounded border-border bg-card text-primary focus:ring-primary focus:ring-offset-background"
                                 checked={form.cleared}
                                 onChange={e => setForm({ ...form, cleared: e.target.checked })}
                             />
@@ -445,6 +487,71 @@ export default function Transactions() {
                                 Cleared <span className="text-muted-foreground font-normal">(Has posted to your actual bank account)</span>
                             </Label>
                         </div>
+
+                        {/* Attachments Section */}
+                        {editing && (
+                            <div className="border-t border-border pt-4 mt-4">
+                                <Label className="text-muted-foreground text-xs uppercase tracking-wider mb-3 block">Receipts & Attachments</Label>
+
+                                <div className="space-y-3">
+                                    {form.attachments?.map(att => (
+                                        <div key={att.id} className="flex items-center justify-between p-2 rounded-lg border border-border bg-muted/20">
+                                            <div className="flex items-center gap-3 overflow-hidden">
+                                                <div className="h-8 w-8 rounded bg-primary/10 flex items-center justify-center shrink-0">
+                                                    {att.mime_type.startsWith('image/') ? (
+                                                        <ImageIcon className="h-4 w-4 text-primary" />
+                                                    ) : (
+                                                        <FileText className="h-4 w-4 text-primary" />
+                                                    )}
+                                                </div>
+                                                <div className="truncate">
+                                                    <a
+                                                        href={`/api/transactions/attachments/${att.id}`}
+                                                        target="_blank"
+                                                        rel="noreferrer"
+                                                        className="text-sm font-medium hover:underline truncate block"
+                                                    >
+                                                        {att.file_name}
+                                                    </a>
+                                                    <p className="text-[10px] text-muted-foreground">{(att.size_bytes / 1024).toFixed(1)} KB</p>
+                                                </div>
+                                            </div>
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="h-8 w-8 text-muted-foreground hover:text-rose-500 hover:bg-rose-500/10 shrink-0"
+                                                onClick={() => handleFileDelete(att.id)}
+                                                type="button"
+                                            >
+                                                <X className="h-4 w-4" />
+                                            </Button>
+                                        </div>
+                                    ))}
+
+                                    <div className="relative border-2 border-dashed border-border rounded-xl p-4 text-center hover:bg-muted/30 transition-colors">
+                                        <input
+                                            type="file"
+                                            ref={fileInputRef}
+                                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"
+                                            onChange={handleFileUpload}
+                                            disabled={isUploading}
+                                        />
+                                        {isUploading ? (
+                                            <Loader2 className="h-6 w-6 animate-spin text-primary mx-auto mb-2" />
+                                        ) : (
+                                            <Paperclip className="h-6 w-6 text-muted-foreground mx-auto mb-2" />
+                                        )}
+                                        <p className="text-sm font-medium text-foreground/80">Click or drag a file to attach</p>
+                                        <p className="text-xs text-muted-foreground mt-1">PNG, JPG, PDF up to 10MB</p>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                        {!editing && (
+                            <div className="text-xs text-muted-foreground italic text-center pt-2">
+                                Save this transaction first to attach receipts.
+                            </div>
+                        )}
 
                         <DialogFooter className="pt-4 border-t border-border">
                             <Button type="button" variant="ghost" className="text-muted-foreground hover:text-foreground hover:bg-secondary" onClick={() => setShowModal(false)}>

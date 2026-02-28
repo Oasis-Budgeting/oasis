@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { TrendingUp, TrendingDown, Wallet, ArrowRight, CheckCircle, AlertCircle, Clock, Target, Landmark, Lightbulb } from 'lucide-react';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
-import { getAccounts, getTransactions, getBudgetSummary, getSpendingByCategory, getAgeOfMoney, getInsights, getGoals, getInvestments, getDebts } from '../api/client.js';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, AreaChart, Area, XAxis, YAxis, CartesianGrid } from 'recharts';
+import { getAccounts, getTransactions, getBudgetSummary, getSpendingByCategory, getAgeOfMoney, getInsights, getGoals, getInvestments, getDebts, getNetWorth } from '../api/client.js';
 import { useSettings } from '../hooks/useSettings.jsx';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
@@ -21,6 +21,7 @@ export default function Dashboard() {
     const [goals, setGoals] = useState([]);
     const [investments, setInvestments] = useState([]);
     const [debts, setDebts] = useState([]);
+    const [netWorthTracker, setNetWorthTracker] = useState([]);
     const [loading, setLoading] = useState(true);
 
     const currentMonth = new Date().toISOString().slice(0, 7);
@@ -35,8 +36,9 @@ export default function Dashboard() {
             getInsights().catch(() => []),
             getGoals().catch(() => []),
             getInvestments().catch(() => []),
-            getDebts().catch(() => [])
-        ]).then(([acc, txn, sum, spend, age, ins, gls, inv, dbt]) => {
+            getDebts().catch(() => []),
+            getNetWorth(6).catch(() => [])
+        ]).then(([acc, txn, sum, spend, age, ins, gls, inv, dbt, nw]) => {
             setAccounts(acc);
             setTransactions(txn.data);
             setSummary(sum);
@@ -46,6 +48,7 @@ export default function Dashboard() {
             setGoals(gls);
             setInvestments(inv);
             setDebts(dbt);
+            setNetWorthTracker(nw);
             setLoading(false);
         }).catch(() => setLoading(false));
     }, []);
@@ -124,6 +127,60 @@ export default function Dashboard() {
                     </CardContent>
                 </Card>
             </div>
+
+            {/* Net Worth Graph (Full Width) */}
+            <Card className="bg-card border-border shadow-sm">
+                <CardHeader className="pb-2">
+                    <CardTitle className="text-lg font-semibold">Net Worth Histroy</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <div className="h-[250px] w-full mt-4">
+                        {netWorthTracker.length > 0 ? (
+                            <ResponsiveContainer width="100%" height="100%">
+                                <AreaChart data={netWorthTracker} margin={{ top: 5, right: 0, left: -20, bottom: 0 }}>
+                                    <defs>
+                                        <linearGradient id="colorNetWorth" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
+                                            <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
+                                        </linearGradient>
+                                        <linearGradient id="colorLiabilities" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="5%" stopColor="#f43f5e" stopOpacity={0.3} />
+                                            <stop offset="95%" stopColor="#f43f5e" stopOpacity={0} />
+                                        </linearGradient>
+                                    </defs>
+                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" opacity={0.5} />
+                                    <XAxis
+                                        dataKey="month"
+                                        axisLine={false}
+                                        tickLine={false}
+                                        tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
+                                        tickFormatter={v => { const m = v.split('-'); return `${m[1]}/${m[0].slice(2)}`; }}
+                                    />
+                                    <YAxis
+                                        axisLine={false}
+                                        tickLine={false}
+                                        tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
+                                        tickFormatter={val => val >= 1000 ? `$${(val / 1000).toFixed(1)}k` : `$${val}`}
+                                    />
+                                    <Tooltip
+                                        contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '12px' }}
+                                        itemStyle={{ fontSize: '13px', fontWeight: 500 }}
+                                        labelStyle={{ color: 'hsl(var(--muted-foreground))', marginBottom: '4px' }}
+                                        formatter={(value, name) => [value >= 0 ? fmt(value) : `-${fmt(Math.abs(value))}`, name.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())]}
+                                    />
+                                    <Area type="monotone" dataKey="assets" stackId="1" stroke="none" fill="none" activeDot={false} />
+                                    <Area type="monotone" dataKey="liabilities" stackId="2" stroke="#f43f5e" strokeWidth={2} fillOpacity={1} fill="url(#colorLiabilities)" />
+                                    <Area type="monotone" dataKey="net_worth" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#colorNetWorth)" />
+                                </AreaChart>
+                            </ResponsiveContainer>
+                        ) : (
+                            <div className="h-full flex items-center justify-center text-muted-foreground text-sm">
+                                Not enough data to map net worth yet.
+                            </div>
+                        )}
+                    </div>
+                </CardContent>
+            </Card>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <Card className="bg-card border-border shadow-sm">
@@ -275,8 +332,8 @@ export default function Dashboard() {
                             <div className="space-y-2">
                                 {insights.slice(0, 4).map((insight, i) => (
                                     <div key={i} className={`p-3 rounded-xl text-xs ${insight.severity === 'warning' ? 'bg-amber-500/10 text-amber-500' :
-                                            insight.severity === 'success' ? 'bg-emerald-500/10 text-emerald-500' :
-                                                'bg-indigo-500/10 text-indigo-400'
+                                        insight.severity === 'success' ? 'bg-emerald-500/10 text-emerald-500' :
+                                            'bg-indigo-500/10 text-indigo-400'
                                         }`}>
                                         <div className="font-semibold">{insight.icon} {insight.title}</div>
                                         <div className="mt-0.5 opacity-80">{insight.description}</div>

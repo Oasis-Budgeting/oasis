@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../co
 import { Button } from '../components/ui/button';
 
 export default function BillCalendar() {
-    const { fmt } = useSettings();
+    const { fmt, settings } = useSettings();
     const [subs, setSubs] = useState([]);
     const [loading, setLoading] = useState(true);
     const [currentDate, setCurrentDate] = useState(new Date());
@@ -81,20 +81,23 @@ export default function BillCalendar() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                <Card className="bg-gradient-to-br from-amber-500/90 via-orange-500/90 to-red-500/90 border-none shadow-lg text-white relative overflow-hidden">
+                <Card className="h-full min-h-[136px] relative overflow-hidden border-none bg-gradient-to-br from-amber-500 via-orange-500 to-orange-600 text-white shadow-lg shadow-orange-900/20">
                     <div className="absolute inset-0 bg-white/5 opacity-50 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-white/20 via-white/5 to-transparent mix-blend-overlay"></div>
+                    <div className="absolute -top-6 -right-6 p-4 opacity-10 pointer-events-none transform rotate-12">
+                        <span className="text-[128px] font-bold leading-none select-none">{settings.currency_symbol || '$'}</span>
+                    </div>
                     <CardHeader className="pb-2 relative z-10">
                         <CardDescription className="text-amber-100 font-medium tracking-wide text-xs uppercase">Due This Month</CardDescription>
-                        <CardTitle className="text-4xl font-bold text-white">{fmt(totalThisMonth)}</CardTitle>
+                        <CardTitle className="text-4xl font-bold text-white tracking-tight drop-shadow-sm">{fmt(totalThisMonth)}</CardTitle>
                     </CardHeader>
                 </Card>
-                <Card className="bg-card border-border shadow-sm">
+                <Card className="h-full min-h-[136px] bg-card border-border shadow-sm hover:shadow-md transition-shadow">
                     <CardHeader className="pb-2">
                         <CardDescription className="text-muted-foreground font-medium tracking-wide text-xs uppercase">Bills This Month</CardDescription>
                         <CardTitle className="text-3xl font-bold text-card-foreground">{billCount}</CardTitle>
                     </CardHeader>
                 </Card>
-                <Card className="bg-card border-border shadow-sm">
+                <Card className="h-full min-h-[136px] bg-card border-border shadow-sm hover:shadow-md transition-shadow">
                     <CardHeader className="pb-2">
                         <CardDescription className="text-muted-foreground font-medium tracking-wide text-xs uppercase">Active Subscriptions</CardDescription>
                         <CardTitle className="text-3xl font-bold text-card-foreground">{subs.filter(s => s.status === 'active').length}</CardTitle>
@@ -124,11 +127,11 @@ export default function BillCalendar() {
                             <div className="grid grid-cols-7 gap-px">
                                 {cells.map((day, i) => (
                                     <div key={i}
-                                        className={`min-h-[80px] p-1.5 rounded-xl border transition-colors ${day ? (isToday(day) ? 'border-indigo-500 bg-indigo-500/5' : 'border-border hover:border-muted-foreground/30') : 'border-transparent'
+                                        className={`min-h-[80px] p-1.5 rounded-xl border transition-colors ${day ? (isToday(day) ? 'border-primary bg-primary/5' : 'border-border hover:border-muted-foreground/30') : 'border-transparent'
                                             }`}>
                                         {day && (
                                             <>
-                                                <div className={`text-xs font-medium mb-1 ${isToday(day) ? 'text-indigo-500 font-bold' : 'text-muted-foreground'}`}>
+                                                <div className={`text-xs font-medium mb-1 ${isToday(day) ? 'text-primary font-bold' : 'text-muted-foreground'}`}>
                                                     {day}
                                                 </div>
                                                 <div className="space-y-0.5">
@@ -175,3 +178,4 @@ export default function BillCalendar() {
         </div>
     );
 }
+

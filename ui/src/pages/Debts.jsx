@@ -19,7 +19,7 @@ const DEBT_TYPES = [
 ];
 
 export default function Debts() {
-    const { fmt } = useSettings();
+    const { fmt, settings } = useSettings();
     const [debts, setDebts] = useState([]);
     const [strategies, setStrategies] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -93,20 +93,23 @@ export default function Debts() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <Card className="bg-gradient-to-br from-rose-500/90 via-red-600/90 to-orange-500/90 border-none shadow-lg text-white relative overflow-hidden">
+                <Card className="h-full min-h-[136px] relative overflow-hidden border-none bg-gradient-to-br from-rose-600 via-rose-500 to-pink-600 text-white shadow-lg shadow-rose-900/20">
                     <div className="absolute inset-0 bg-white/5 opacity-50 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-white/20 via-white/5 to-transparent mix-blend-overlay"></div>
+                    <div className="absolute -top-6 -right-6 p-4 opacity-10 pointer-events-none transform rotate-12">
+                        <span className="text-[128px] font-bold leading-none select-none">{settings.currency_symbol || '$'}</span>
+                    </div>
                     <CardHeader className="pb-2 relative z-10">
                         <CardDescription className="text-rose-100 font-medium tracking-wide text-xs uppercase">Total Debt</CardDescription>
-                        <CardTitle className="text-4xl font-bold text-white">{fmt(totalBalance)}</CardTitle>
+                        <CardTitle className="text-4xl font-bold text-white tracking-tight drop-shadow-sm">{fmt(totalBalance)}</CardTitle>
                     </CardHeader>
                 </Card>
-                <Card className="bg-card border-border shadow-sm">
+                <Card className="h-full min-h-[136px] bg-card border-border shadow-sm hover:shadow-md transition-shadow">
                     <CardHeader className="pb-2">
                         <CardDescription className="text-muted-foreground font-medium tracking-wide text-xs uppercase">Monthly Minimum</CardDescription>
                         <CardTitle className="text-3xl font-bold text-card-foreground">{fmt(totalMinPayment)}</CardTitle>
                     </CardHeader>
                 </Card>
-                <Card className="bg-card border-border shadow-sm">
+                <Card className="h-full min-h-[136px] bg-card border-border shadow-sm hover:shadow-md transition-shadow">
                     <CardHeader className="pb-2">
                         <CardDescription className="text-muted-foreground font-medium tracking-wide text-xs uppercase">Avg Interest Rate</CardDescription>
                         <CardTitle className="text-3xl font-bold text-card-foreground">{avgRate.toFixed(1)}%</CardTitle>

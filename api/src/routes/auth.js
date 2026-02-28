@@ -41,6 +41,36 @@ export default async function authRoutes(fastify) {
                 { user_id: userId, key: 'theme', value: 'dark' }
             ]);
 
+            // Initialize default categories for the user
+            const defaultGroups = [
+                { name: 'Housing', categories: [{ name: 'Rent/Mortgage' }, { name: 'Home Maintenance' }, { name: 'Property Taxes' }] },
+                { name: 'Utilities', categories: [{ name: 'Electricity' }, { name: 'Water' }, { name: 'Internet' }, { name: 'Trash' }, { name: 'Cell Phone' }] },
+                { name: 'Food', categories: [{ name: 'Groceries' }, { name: 'Dining Out' }] },
+                { name: 'Transportation', categories: [{ name: 'Auto Loan' }, { name: 'Gas' }, { name: 'Auto Maintenance' }, { name: 'Auto Insurance' }, { name: 'Public Transit' }] },
+                { name: 'Personal', categories: [{ name: 'Clothing' }, { name: 'Entertainment' }, { name: 'Subscriptions' }, { name: 'Hobbies' }] },
+                { name: 'Health & Fitness', categories: [{ name: 'Medical/Dental' }, { name: 'Gym/Sports' }, { name: 'Pharmacy' }] },
+                { name: 'Savings & Debt', categories: [{ name: 'Emergency Fund' }, { name: 'Retirement' }, { name: 'Extra Debt Payment' }] }
+            ];
+
+            let groupSortOrder = 1;
+            for (const group of defaultGroups) {
+                const [groupId] = await db('category_groups').insert({
+                    user_id: userId,
+                    name: group.name,
+                    sort_order: groupSortOrder++
+                });
+
+                let categorySortOrder = 1;
+                const categoryInserts = group.categories.map(cat => ({
+                    user_id: userId,
+                    group_id: groupId,
+                    name: cat.name,
+                    sort_order: categorySortOrder++
+                }));
+
+                await db('categories').insert(categoryInserts);
+            }
+
             // Generate token
             const token = jwt.sign({ userId }, JWT_SECRET, { expiresIn: '7d' });
 
@@ -86,6 +116,83 @@ export default async function authRoutes(fastify) {
         } catch (err) {
             request.log.error(err);
             return reply.code(500).send({ error: 'Failed to log in' });
+        }
+    });
+
+    // Forgot Password
+    fastify.post('/forgot-password', async (request, reply) => {
+        try {
+            const { email } = request.body;
+            if (!email) return reply.code(400).send({ error: 'Email is required' });
+
+            const user = await db('users').where({ email }).first();
+            if (!user) {
+                // For security, do not reveal if the email exists or not
+                return reply.send({ message: 'If the email exists, a reset link has been sent.' });
+            }
+
+            // Generate a secure reset token
+            const crypto = await import('crypto');
+            const resetToken = crypto.randomBytes(32).toString('hex');
+
+            // Invalidate any existing unused reset tokens for this user
+            await db('password_resets').where({ user_id: user.id, used: false }).update({ used: true });
+
+            // Set expiration to 1 hour from now
+            const expiresAt = new Date(Date.now() + 3600000);
+
+            await db('password_resets').insert({
+                user_id: user.id,
+                token: resetToken,
+                expires_at: expiresAt,
+                used: false
+            });
+
+            // MOCK EMAIL SERVICE 
+            // In a real app, integrate SendGrid/AWS SES here
+            const resetUrl = `http://localhost:3003/reset-password?token=${resetToken}`;
+            request.log.info(`\n\n=== PASSWORD RESET EMAIL ===\nTo: ${user.email}\nLink: ${resetUrl}\n============================\n`);
+
+            return reply.send({ message: 'If the email exists, a reset link has been sent.' });
+        } catch (err) {
+            request.log.error(err);
+            return reply.code(500).send({ error: 'Failed to process forgot password request' });
+        }
+    });
+
+    // Reset Password
+    fastify.post('/reset-password', async (request, reply) => {
+        try {
+            const { token, password } = request.body;
+
+            if (!token || !password) {
+                return reply.code(400).send({ error: 'Token and new password are required' });
+            }
+
+            // Find valid, unused token
+            const resetRecord = await db('password_resets')
+                .where({ token, used: false })
+                .andWhere('expires_at', '>', new Date())
+                .first();
+
+            if (!resetRecord) {
+                return reply.code(400).send({ error: 'Invalid or expired reset token' });
+            }
+
+            // Hash the new password
+            const salt = await bcrypt.genSalt(10);
+            const password_hash = await bcrypt.hash(password, salt);
+
+            // Update user's password
+            await db('users').where({ id: resetRecord.user_id }).update({ password_hash });
+
+            // Mark token as used
+            await db('password_resets').where({ id: resetRecord.id }).update({ used: true });
+
+            return reply.send({ message: 'Password has been successfully updated' });
+        } catch (err) {
+            request.log.error(err);
+            return reply.code(500).send({ error: 'Failed to reset password' });
         }
     });
 

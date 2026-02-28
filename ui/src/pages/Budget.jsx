@@ -1,12 +1,13 @@
 import { useState, useEffect, useCallback } from 'react';
 import { ChevronLeft, ChevronRight, Plus, Copy, ArrowLeftRight, Layers } from 'lucide-react';
-import { getBudget, getBudgetSummary, assignBudget, createCategoryGroup, createCategory, copyBudget, moveMoney } from '../api/client.js';
+import { getBudget, getBudgetSummary, assignBudget, createCategoryGroup, createCategory, updateCategory, copyBudget, moveMoney } from '../api/client.js';
 import { useSettings } from '../hooks/useSettings.jsx';
 import { Card, CardContent } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '../components/ui/dialog';
 import { Label } from '../components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 
 export default function Budget() {
     const { fmt } = useSettings();
@@ -16,9 +17,11 @@ export default function Budget() {
     const [loading, setLoading] = useState(true);
     const [showGroupModal, setShowGroupModal] = useState(false);
     const [showCatModal, setShowCatModal] = useState(false);
+    const [showEditCatModal, setShowEditCatModal] = useState(false);
     const [showMoveModal, setShowMoveModal] = useState(false);
     const [newGroupName, setNewGroupName] = useState('');
     const [newCat, setNewCat] = useState({ group_id: '', name: '', goal_type: '', goal_amount: '' });
+    const [editCat, setEditCat] = useState(null);
     const [moveData, setMoveData] = useState({ from: '', to: '', amount: '' });
     const [toast, setToast] = useState(null);
     const [showTemplateModal, setShowTemplateModal] = useState(false);
@@ -28,7 +31,7 @@ export default function Budget() {
             name: '50/30/20 Rule',
             description: 'Split income: 50% needs, 30% wants, 20% savings',
             icon: '⚖️',
-            color: 'indigo',
+            color: 'primary',
             groups: [
                 { name: '🏠 Needs (50%)', categories: ['Rent / Mortgage', 'Utilities', 'Groceries', 'Insurance', 'Transportation', 'Healthcare'] },
                 { name: '🎯 Wants (30%)', categories: ['Dining Out', 'Entertainment', 'Shopping', 'Subscriptions', 'Hobbies', 'Travel'] },
@@ -117,6 +120,24 @@ export default function Budget() {
         loadData();
     };
 
+    const handleEditCategory = async (e) => {
+        e.preventDefault();
+        if (!editCat || !editCat.name.trim()) return;
+
+        await updateCategory(editCat.id, {
+            name: editCat.name,
+            group_id: parseInt(editCat.group_id),
+            goal_type: editCat.goal_type || null,
+            goal_amount: editCat.goal_amount ? parseFloat(editCat.goal_amount) : null,
+            rollover_strategy: editCat.rollover_strategy || 'none',
+            sweep_target_id: editCat.sweep_target_id ? parseInt(editCat.sweep_target_id) : null
+        });
+
+        setEditCat(null);
+        setShowEditCatModal(false);
+        loadData();
+    };
+
     const handleCopyLastMonth = async () => {
         const result = await copyBudget(month);
         setToast(`Copied ${result.copied} of ${result.total} categories from last month`);
@@ -140,7 +161,7 @@ export default function Budget() {
     if (loading) {
         return (
             <div className="flex flex-col items-center justify-center py-24">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-500 mb-4"></div>
+                <div className="mb-4 h-12 w-12 animate-spin rounded-full border-b-2 border-primary"></div>
                 <p className="text-muted-foreground font-medium">Loading budget...</p>
             </div>
         );
@@ -194,7 +215,7 @@ export default function Budget() {
                         <Button variant="outline" className="bg-card border-border text-muted-foreground hover:bg-secondary hover:text-foreground" onClick={() => setShowGroupModal(true)}>
                             <Plus className="mr-1 h-4 w-4" /> Group
                         </Button>
-                        <Button className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-900/20" onClick={() => setShowCatModal(true)}>
+                        <Button className="bg-primary text-primary-foreground shadow-md shadow-cyan-900/20 hover:bg-primary/90" onClick={() => setShowCatModal(true)}>
                             <Plus className="mr-1 h-4 w-4" /> Category
                         </Button>
                     </div>
@@ -251,13 +272,34 @@ export default function Budget() {
                                     <div key={cat.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between px-4 py-3 hover:bg-muted/30 transition-colors group">
 
                                         {/* Category Info */}
-                                        <div className="w-full sm:w-1/3 min-w-[200px] mb-3 sm:mb-0 flex items-center justify-between sm:justify-start gap-4">
-                                            <span className="font-medium text-muted-foreground group-hover:text-foreground transition-colors">{cat.name}</span>
+                                        <div
+                                            className="w-full sm:w-1/3 min-w-[200px] mb-3 sm:mb-0 flex items-center justify-between sm:justify-start gap-4 cursor-pointer"
+                                            onClick={() => {
+                                                setEditCat({
+                                                    ...cat,
+                                                    group_id: cat.group_id.toString(),
+                                                    goal_amount: cat.goal_amount || '',
+                                                    goal_type: cat.goal_type || '',
+                                                    rollover_strategy: cat.rollover_strategy || 'none',
+                                                    sweep_target_id: cat.sweep_target_id ? cat.sweep_target_id.toString() : ''
+                                                });
+                                                setShowEditCatModal(true);
+                                            }}
+                                        >
+                                            <div className="flex flex-col">
+                                                <span className="font-medium text-muted-foreground group-hover:text-foreground transition-colors">
+                                                    {cat.name}
+                                                </span>
+                                                {cat.rollover_strategy && cat.rollover_strategy !== 'none' && (
+                                                    <span className="text-[10px] text-primary/70 uppercase">
+                                                        {cat.rollover_strategy === 'rollover' ? '🔄 Rollover' : '🧹 Sweep'}
+                                                    </span>
+                                                )}
+                                            </div>
                                             {cat.goal_amount !== null && cat.goal_amount !== undefined && (
                                                 <div className="flex-shrink-0 w-16 h-1.5 bg-muted rounded-full overflow-hidden" title={`Goal Progress: ${Math.round(goalProgress || 0)}%`}>
                                                     <div
-                                                        className={`h-full rounded-full ${goalProgress >= 100 ? 'bg-emerald-500' : goalProgress < 0 ? 'bg-rose-500' : 'bg-indigo-500'}`}
-                                                        style={{ width: `${Math.min(100, Math.max(0, goalProgress || 0))}%` }}
+                                                        className={`h-full rounded-full ${goalProgress >= 100 ? 'bg-emerald-500' : goalProgress < 0 ? 'bg-rose-500' : 'bg-primary'}`}
                                                     />
                                                 </div>
                                             )}
@@ -272,7 +314,7 @@ export default function Budget() {
                                                 <div className="relative">
                                                     <Input
                                                         type="number"
-                                                        className="h-8 md:h-9 bg-muted/50 border-transparent hover:border-muted-foreground/30 focus:bg-card focus:border-indigo-500 text-right font-mono text-sm shadow-none focus-visible:ring-1 focus-visible:ring-indigo-500 transition-all text-foreground/80 w-full"
+                                                        className="h-8 w-full border-transparent bg-muted/50 text-right font-mono text-sm text-foreground/80 shadow-none transition-all hover:border-muted-foreground/30 focus:border-primary focus:bg-card focus-visible:ring-1 focus-visible:ring-primary md:h-9"
                                                         defaultValue={cat.assigned || 0}
                                                         onBlur={(e) => handleAssign(cat.id, e.target.value)}
                                                         onKeyDown={(e) => e.key === 'Enter' && e.target.blur()}
@@ -312,7 +354,7 @@ export default function Budget() {
                 <div className="flex flex-col items-center justify-center py-24 text-center border-2 border-dashed border-border rounded-3xl bg-muted/50 mt-4">
                     <p className="text-lg font-medium text-muted-foreground mb-2">No budget categories yet</p>
                     <p className="text-muted-foreground mb-6 max-w-sm">Create a group and add categories to start organizing your money.</p>
-                    <Button onClick={() => setShowGroupModal(true)} className="bg-indigo-600 hover:bg-indigo-700">
+                    <Button onClick={() => setShowGroupModal(true)} className="bg-primary text-primary-foreground hover:bg-primary/90">
                         <Plus className="mr-2 h-4 w-4" /> Add your first group
                     </Button>
                 </div>
@@ -332,7 +374,7 @@ export default function Budget() {
                             <Label htmlFor="groupName" className="text-muted-foreground text-xs uppercase tracking-wider">Group Name</Label>
                             <Input
                                 id="groupName"
-                                className="bg-card border-border text-card-foreground placeholder:text-muted-foreground focus-visible:ring-indigo-500"
+                                className="bg-card border-border text-card-foreground placeholder:text-muted-foreground focus-visible:ring-primary"
                                 value={newGroupName}
                                 onChange={e => setNewGroupName(e.target.value)}
                                 placeholder="e.g., Fixed Expenses, Living, Savings"
@@ -344,7 +386,7 @@ export default function Budget() {
                             <Button type="button" variant="ghost" className="text-muted-foreground hover:text-foreground hover:bg-secondary" onClick={() => setShowGroupModal(false)}>
                                 Cancel
                             </Button>
-                            <Button type="submit" className="bg-indigo-600 hover:bg-indigo-700 text-white">
+                            <Button type="submit" className="bg-primary text-primary-foreground hover:bg-primary/90">
                                 Create Group
                             </Button>
                         </DialogFooter>
@@ -366,7 +408,7 @@ export default function Budget() {
                             <Label htmlFor="catGroupId" className="text-muted-foreground text-xs uppercase tracking-wider">Group</Label>
                             <select
                                 id="catGroupId"
-                                className="flex h-10 w-full rounded-xl border border-border bg-card px-3 py-2 text-sm text-card-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                                className="flex h-10 w-full rounded-xl border border-border bg-card px-3 py-2 text-sm text-card-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                                 value={newCat.group_id}
                                 onChange={e => setNewCat({ ...newCat, group_id: e.target.value })}
                                 required
@@ -379,7 +421,7 @@ export default function Budget() {
                             <Label htmlFor="catName" className="text-muted-foreground text-xs uppercase tracking-wider">Category Name</Label>
                             <Input
                                 id="catName"
-                                className="bg-card border-border text-card-foreground placeholder:text-muted-foreground focus-visible:ring-indigo-500"
+                                className="bg-card border-border text-card-foreground placeholder:text-muted-foreground focus-visible:ring-primary"
                                 value={newCat.name}
                                 onChange={e => setNewCat({ ...newCat, name: e.target.value })}
                                 placeholder="e.g., Groceries, Rent, Auto Maintenance"
@@ -392,7 +434,7 @@ export default function Budget() {
                                 <Label htmlFor="goalType" className="text-muted-foreground text-xs uppercase tracking-wider">Goal Type <span className="text-muted-foreground normal-case font-normal">(Optional)</span></Label>
                                 <select
                                     id="goalType"
-                                    className="flex h-10 w-full rounded-xl border border-border bg-card px-3 py-2 text-sm text-card-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                                    className="flex h-10 w-full rounded-xl border border-border bg-card px-3 py-2 text-sm text-card-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                                     value={newCat.goal_type}
                                     onChange={e => setNewCat({ ...newCat, goal_type: e.target.value })}
                                 >
@@ -408,7 +450,7 @@ export default function Budget() {
                                     id="goalAmount"
                                     type="number"
                                     step="0.01"
-                                    className="bg-card border-border text-card-foreground placeholder:text-muted-foreground focus-visible:ring-indigo-500 font-mono"
+                                    className="bg-card border-border text-card-foreground placeholder:text-muted-foreground focus-visible:ring-primary font-mono"
                                     value={newCat.goal_amount}
                                     onChange={e => setNewCat({ ...newCat, goal_amount: e.target.value })}
                                     placeholder="0.00"
@@ -421,7 +463,7 @@ export default function Budget() {
                             <Button type="button" variant="ghost" className="text-muted-foreground hover:text-foreground hover:bg-secondary" onClick={() => setShowCatModal(false)}>
                                 Cancel
                             </Button>
-                            <Button type="submit" className="bg-indigo-600 hover:bg-indigo-700 text-card-foreground">
+                            <Button type="submit" className="bg-primary text-primary-foreground hover:bg-primary/90">
                                 Create Category
                             </Button>
                         </DialogFooter>
@@ -443,7 +485,7 @@ export default function Budget() {
                             <Label htmlFor="moveFrom" className="text-muted-foreground text-xs uppercase tracking-wider">From Category</Label>
                             <select
                                 id="moveFrom"
-                                className="flex h-10 w-full rounded-xl border border-border bg-card px-3 py-2 text-sm text-card-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                                className="flex h-10 w-full rounded-xl border border-border bg-card px-3 py-2 text-sm text-card-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                                 value={moveData.from}
                                 onChange={e => setMoveData({ ...moveData, from: e.target.value })}
                                 required
@@ -465,7 +507,7 @@ export default function Budget() {
                             <Label htmlFor="moveTo" className="text-muted-foreground text-xs uppercase tracking-wider">To Category</Label>
                             <select
                                 id="moveTo"
-                                className="flex h-10 w-full rounded-xl border border-border bg-card px-3 py-2 text-sm text-card-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                                className="flex h-10 w-full rounded-xl border border-border bg-card px-3 py-2 text-sm text-card-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                                 value={moveData.to}
                                 onChange={e => setMoveData({ ...moveData, to: e.target.value })}
                                 required
@@ -487,7 +529,7 @@ export default function Budget() {
                                     id="moveAmount"
                                     type="number"
                                     step="0.01"
-                                    className="bg-card border-border text-card-foreground placeholder:text-muted-foreground focus-visible:ring-indigo-500 font-mono text-lg pl-8"
+                                    className="bg-card border-border text-card-foreground placeholder:text-muted-foreground focus-visible:ring-primary font-mono text-lg pl-8"
                                     value={moveData.amount}
                                     onChange={e => setMoveData({ ...moveData, amount: e.target.value })}
                                     placeholder="0.00"
@@ -500,7 +542,7 @@ export default function Budget() {
                             <Button type="button" variant="ghost" className="text-muted-foreground hover:text-foreground hover:bg-secondary" onClick={() => setShowMoveModal(false)}>
                                 Cancel
                             </Button>
-                            <Button type="submit" className="bg-indigo-600 hover:bg-indigo-700 text-card-foreground">
+                            <Button type="submit" className="bg-primary text-primary-foreground hover:bg-primary/90">
                                 Move Funds
                             </Button>
                         </DialogFooter>
@@ -531,10 +573,10 @@ export default function Budget() {
                                     loadData();
                                 } catch (e) { alert(e.message); }
                             }}
-                                className="w-full text-left p-4 rounded-2xl border border-border hover:border-indigo-500/50 hover:bg-indigo-500/5 transition-all group">
+                                className="group w-full rounded-2xl border border-border p-4 text-left transition-all hover:border-primary/50 hover:bg-primary/5">
                                 <div className="flex items-center gap-3 mb-1">
                                     <span className="text-xl">{tpl.icon}</span>
-                                    <span className="font-semibold text-card-foreground group-hover:text-indigo-400 transition-colors">{tpl.name}</span>
+                                    <span className="font-semibold text-card-foreground transition-colors group-hover:text-primary">{tpl.name}</span>
                                 </div>
                                 <p className="text-xs text-muted-foreground ml-9">{tpl.description}</p>
                                 <div className="flex flex-wrap gap-1 mt-2 ml-9">

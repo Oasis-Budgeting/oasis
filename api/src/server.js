@@ -21,6 +21,7 @@ import debtRoutes from './routes/debts.js';
 import insightRoutes from './routes/insights.js';
 import exportRoutes from './routes/export.js';
 import aiRoutes from './routes/ai.js';
+import ruleRoutes from './routes/rules.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -50,6 +51,7 @@ app.register(debtRoutes, { prefix: '/api/debts' });
 app.register(insightRoutes, { prefix: '/api/insights' });
 app.register(exportRoutes, { prefix: '/api/export' });
 app.register(aiRoutes, { prefix: '/api/ai' });
+app.register(ruleRoutes, { prefix: '/api/rules' });
 
 // Serve static frontend in production
 const uiDistPath = join(__dirname, '../../ui/dist');
@@ -73,12 +75,16 @@ try {
 // Run migrations on startup
 async function start() {
     try {
+        app.log.info('Running database migrations...');
+        await db.migrate.latest();
+        app.log.info('Database migrations completed successfully');
+
         const host = process.env.HOST || '0.0.0.0';
         const port = parseInt(process.env.PORT || '3000', 10);
         await app.listen({ port, host });
         app.log.info(`Bucket Budget running on http://${host}:${port}`);
     } catch (err) {
-        app.log.error(err);
+        console.error('Failed to start server or run migrations:', err);
         process.exit(1);
     }
 }

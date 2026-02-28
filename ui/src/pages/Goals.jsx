@@ -13,7 +13,7 @@ const GOAL_ICONS = ['🎯', '🏠', '✈️', '🚗', '💍', '🎓', '🏥', '�
 const GOAL_COLORS = ['#6366f1', '#8b5cf6', '#ec4899', '#f43f5e', '#ef4444', '#f97316', '#eab308', '#22c55e', '#14b8a6', '#06b6d4', '#3b82f6'];
 
 export default function Goals() {
-    const { fmt } = useSettings();
+    const { fmt, settings } = useSettings();
     const [goals, setGoals] = useState([]);
     const [loading, setLoading] = useState(true);
     const [openDialog, setOpenDialog] = useState(false);
@@ -71,33 +71,36 @@ export default function Goals() {
         <div className="max-w-6xl mx-auto space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                 <div className="flex items-center gap-3">
-                    <div className="p-2 bg-indigo-500/10 rounded-2xl text-indigo-600"><Target className="h-6 w-6" /></div>
+                    <div className="p-2 bg-primary/10 rounded-2xl text-primary"><Target className="h-6 w-6" /></div>
                     <div>
                         <h2 className="text-2xl font-bold tracking-tight text-card-foreground">Savings Goals</h2>
                         <p className="text-muted-foreground">Track progress toward your financial targets.</p>
                     </div>
                 </div>
-                <Button onClick={openNew} className="bg-indigo-600 hover:bg-indigo-700 text-white w-full sm:w-auto">
+                <Button onClick={openNew} className="bg-primary text-primary-foreground hover:bg-primary/90 w-full sm:w-auto">
                     <Plus className="mr-2 h-4 w-4" /> New Goal
                 </Button>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <Card className="bg-gradient-to-br from-indigo-500/90 via-purple-600/90 to-pink-500/90 border-none shadow-lg text-white relative overflow-hidden">
+                <Card className="h-full min-h-[136px] relative overflow-hidden border-none bg-gradient-to-br from-primary/90 via-primary/80 to-accent/90 text-primary-foreground shadow-lg shadow-cyan-900/20">
                     <div className="absolute inset-0 bg-white/5 opacity-50 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-white/20 via-white/5 to-transparent mix-blend-overlay"></div>
+                    <div className="absolute -top-6 -right-6 p-4 opacity-10 pointer-events-none transform rotate-12">
+                        <span className="text-[128px] font-bold leading-none select-none">{settings.currency_symbol || '$'}</span>
+                    </div>
                     <CardHeader className="pb-2 relative z-10">
-                        <CardDescription className="text-indigo-100 font-medium tracking-wide text-xs uppercase">Total Progress</CardDescription>
-                        <CardTitle className="text-4xl font-bold text-white">{fmt(totalSaved)}</CardTitle>
-                        <p className="text-sm text-indigo-100 mt-1">of {fmt(totalTarget)} target</p>
+                        <CardDescription className="text-primary-foreground/80 font-medium tracking-wide text-xs uppercase">Total Progress</CardDescription>
+                        <CardTitle className="text-4xl font-bold text-primary-foreground tracking-tight drop-shadow-sm">{fmt(totalSaved)}</CardTitle>
+                        <p className="text-sm text-primary-foreground/80 mt-1 font-medium">of {fmt(totalTarget)} target</p>
                     </CardHeader>
                 </Card>
-                <Card className="bg-card border-border shadow-sm">
+                <Card className="h-full min-h-[136px] bg-card border-border shadow-sm hover:shadow-md transition-shadow">
                     <CardHeader className="pb-2">
                         <CardDescription className="text-muted-foreground font-medium tracking-wide text-xs uppercase">Active Goals</CardDescription>
                         <CardTitle className="text-3xl font-bold text-card-foreground">{activeGoals.length}</CardTitle>
                     </CardHeader>
                 </Card>
-                <Card className="bg-card border-border shadow-sm">
+                <Card className="h-full min-h-[136px] bg-card border-border shadow-sm hover:shadow-md transition-shadow">
                     <CardHeader className="pb-2">
                         <CardDescription className="text-muted-foreground font-medium tracking-wide text-xs uppercase">Completed</CardDescription>
                         <CardTitle className="text-3xl font-bold text-emerald-500 flex items-center gap-2"><Sparkles className="w-6 h-6" />{completedGoals.length}</CardTitle>
@@ -112,7 +115,7 @@ export default function Goals() {
                     <PiggyBank className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                     <h3 className="text-lg font-medium text-muted-foreground">No goals yet</h3>
                     <p className="text-muted-foreground mt-1 max-w-sm mx-auto">Set savings goals to track your progress toward vacations, emergency funds, and more.</p>
-                    <Button onClick={openNew} className="mt-6 bg-indigo-600 hover:bg-indigo-700 text-white">
+                    <Button onClick={openNew} className="mt-6 bg-primary text-primary-foreground hover:bg-primary/90">
                         <Plus className="mr-2 h-4 w-4" /> Create your first goal
                     </Button>
                 </div>
@@ -187,7 +190,7 @@ export default function Goals() {
                             <div className="flex flex-wrap gap-2">
                                 {GOAL_ICONS.map(icon => (
                                     <button key={icon} type="button" onClick={() => setForm({ ...form, icon })}
-                                        className={`text-xl p-1.5 rounded-xl transition-all ${form.icon === icon ? 'bg-indigo-500/20 ring-2 ring-indigo-500 scale-110' : 'hover:bg-muted'}`}>
+                                        className={`text-xl p-1.5 rounded-xl transition-all ${form.icon === icon ? 'bg-primary/20 ring-2 ring-primary scale-110' : 'hover:bg-muted'}`}>
                                         {icon}
                                     </button>
                                 ))}
@@ -223,13 +226,13 @@ export default function Goals() {
                                     <Button type="button" variant="destructive" onClick={() => { handleDelete(editItem.id); setOpenDialog(false); }}><Trash2 className="w-4 h-4 mr-2" />Delete</Button>
                                     <div className="flex gap-2">
                                         <Button type="button" variant="ghost" className="text-muted-foreground" onClick={() => setOpenDialog(false)}>Cancel</Button>
-                                        <Button type="submit" className="bg-indigo-600 hover:bg-indigo-700 text-white">Save</Button>
+                                        <Button type="submit" className="bg-primary text-primary-foreground hover:bg-primary/90">Save</Button>
                                     </div>
                                 </div>
                             ) : (
                                 <>
                                     <Button type="button" variant="ghost" className="text-muted-foreground" onClick={() => setOpenDialog(false)}>Cancel</Button>
-                                    <Button type="submit" className="bg-indigo-600 hover:bg-indigo-700 text-white">Create Goal</Button>
+                                    <Button type="submit" className="bg-primary text-primary-foreground hover:bg-primary/90">Create Goal</Button>
                                 </>
                             )}
                         </DialogFooter>
@@ -261,3 +264,5 @@ export default function Goals() {
         </div>
     );
 }
+
+

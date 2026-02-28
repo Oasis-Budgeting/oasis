@@ -124,7 +124,7 @@ export default function AiAdvisor() {
             {/* Header */}
             <div className="flex items-center justify-between mb-4 flex-shrink-0">
                 <div className="flex items-center gap-3">
-                    <div className="p-2 bg-violet-500/10 rounded-2xl text-violet-500"><Bot className="h-6 w-6" /></div>
+                    <div className="p-2 bg-primary/10 rounded-2xl text-primary"><Bot className="h-6 w-6" /></div>
                     <div>
                         <h2 className="text-2xl font-bold tracking-tight text-card-foreground">Finny AI</h2>
                         <p className="text-muted-foreground text-sm">Get personalized financial advice from Finny, your local LLM advisor.</p>
@@ -145,7 +145,7 @@ export default function AiAdvisor() {
                 <div className="flex-1 overflow-y-auto p-4 space-y-4">
                     {messages.length === 0 ? (
                         <div className="flex flex-col items-center justify-center h-full text-center">
-                            <Sparkles className="w-12 h-12 text-violet-500/30 mb-4" />
+                            <Sparkles className="w-12 h-12 text-primary/30 mb-4" />
                             <h3 className="text-lg font-semibold text-card-foreground mb-1">Ask anything about your finances</h3>
                             <p className="text-muted-foreground text-sm max-w-md mb-8">
                                 Your financial data is automatically shared with the LLM for personalized advice. {!model && 'Connect an LLM first →'}
@@ -154,9 +154,9 @@ export default function AiAdvisor() {
                                 {QUICK_PROMPTS.map((qp, i) => (
                                     <button key={i} onClick={() => sendMessage(qp.prompt)}
                                         disabled={!model || loading}
-                                        className="text-left p-3 rounded-xl border border-border hover:border-violet-500/50 hover:bg-violet-500/5 transition-all disabled:opacity-50 disabled:pointer-events-none group">
+                                        className="text-left p-3 rounded-xl border border-border hover:border-primary/50 hover:bg-primary/5 transition-all disabled:opacity-50 disabled:pointer-events-none group">
                                         <span className="text-lg">{qp.icon}</span>
-                                        <p className="text-xs font-medium text-muted-foreground group-hover:text-violet-400 mt-1">{qp.label}</p>
+                                        <p className="text-xs font-medium text-muted-foreground group-hover:text-primary mt-1">{qp.label}</p>
                                     </button>
                                 ))}
                             </div>
@@ -166,7 +166,7 @@ export default function AiAdvisor() {
                             {messages.map((msg, i) => (
                                 <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                                     <div className={`max-w-[85%] rounded-2xl px-4 py-3 ${msg.role === 'user'
-                                        ? 'bg-violet-600 text-white'
+                                        ? 'bg-primary text-primary-foreground'
                                         : msg.error
                                             ? 'bg-red-500/10 border border-red-500/20 text-red-400'
                                             : 'bg-muted/50 border border-border text-card-foreground'
@@ -191,7 +191,7 @@ export default function AiAdvisor() {
                             {loading && (
                                 <div className="flex justify-start">
                                     <div className="bg-muted/50 border border-border rounded-2xl px-4 py-3 flex items-center gap-2">
-                                        <Loader2 className="w-4 h-4 animate-spin text-violet-500" />
+                                        <Loader2 className="w-4 h-4 animate-spin text-primary" />
                                         <span className="text-sm text-muted-foreground">Thinking...</span>
                                     </div>
                                 </div>
@@ -213,7 +213,7 @@ export default function AiAdvisor() {
                             className="bg-background border-border flex-1"
                         />
                         <Button type="submit" disabled={!model || !input.trim() || loading}
-                            className="bg-violet-600 hover:bg-violet-700 text-white">
+                            className="bg-primary text-primary-foreground hover:bg-primary/90">
                             <Send className="w-4 h-4" />
                         </Button>
                     </form>
@@ -242,7 +242,7 @@ export default function AiAdvisor() {
                                 onChange={e => setBaseUrl(e.target.value)}
                                 placeholder={DEFAULT_URLS[provider]} />
                         </div>
-                        <Button onClick={loadModels} disabled={modelsLoading} className="w-full bg-violet-600 hover:bg-violet-700 text-white">
+                        <Button onClick={loadModels} disabled={modelsLoading} className="w-full bg-primary text-primary-foreground hover:bg-primary/90">
                             {modelsLoading ? <><Loader2 className="w-4 h-4 animate-spin mr-2" /> Connecting...</> : <><RefreshCw className="w-4 h-4 mr-2" /> Fetch Models</>}
                         </Button>
                         {modelsError && (
@@ -265,13 +265,13 @@ export default function AiAdvisor() {
                             <p className="font-semibold mb-1">💡 Setup Guide</p>
                             {provider === 'ollama' ? (
                                 <>
-                                    <p>1. Install Ollama: <span className="font-mono">brew install ollama</span> or <a href="https://ollama.com" className="text-violet-400 hover:underline" target="_blank">ollama.com</a></p>
+                                    <p>1. Install Ollama: <span className="font-mono">brew install ollama</span> or <a href="https://ollama.com" className="text-primary hover:underline" target="_blank">ollama.com</a></p>
                                     <p>2. Pull a model: <span className="font-mono">ollama pull llama3.2</span></p>
                                     <p>3. Start: <span className="font-mono">ollama serve</span></p>
                                 </>
                             ) : (
                                 <>
-                                    <p>1. Download <a href="https://lmstudio.ai" className="text-violet-400 hover:underline" target="_blank">LM Studio</a></p>
+                                    <p>1. Download <a href="https://lmstudio.ai" className="text-primary hover:underline" target="_blank">LM Studio</a></p>
                                     <p>2. Download a model and start the local server</p>
                                     <p>3. Enable "Start Server" in the left panel</p>
                                 </>
@@ -296,14 +296,14 @@ export default function AiAdvisor() {
                         <div className="space-y-2">
                             <div className="flex items-center justify-between">
                                 <Label className="text-sm">Sections</Label>
-                                <button onClick={toggleAll} className="text-[10px] text-violet-400 hover:text-violet-300">{allSelected ? 'Deselect All' : 'Select All'}</button>
+                                <button onClick={toggleAll} className="text-[10px] text-primary hover:text-primary/80">{allSelected ? 'Deselect All' : 'Select All'}</button>
                             </div>
                             <div className="grid grid-cols-2 gap-2">
                                 {Object.entries(exportSections).map(([key, val]) => (
-                                    <label key={key} className={`flex items-center gap-2 p-2 rounded-xl border cursor-pointer text-sm transition-all ${val ? 'border-violet-500/50 bg-violet-500/5 text-foreground/80' : 'border-border text-muted-foreground'}`}>
+                                    <label key={key} className={`flex items-center gap-2 p-2 rounded-xl border cursor-pointer text-sm transition-all ${val ? 'border-primary/50 bg-primary/5 text-foreground/80' : 'border-border text-muted-foreground'}`}>
                                         <input type="checkbox" checked={val}
                                             onChange={() => setExportSections({ ...exportSections, [key]: !val })}
-                                            className="accent-violet-500" />
+                                            className="accent-primary" />
                                         <span className="capitalize">{key}</span>
                                     </label>
                                 ))}
@@ -325,7 +325,7 @@ export default function AiAdvisor() {
 
                         <div className="grid grid-cols-2 gap-2 pt-2">
                             <Button onClick={() => handleExport('copy')} disabled={exportLoading}
-                                className="bg-violet-600 hover:bg-violet-700 text-white">
+                                className="bg-primary text-primary-foreground hover:bg-primary/90">
                                 {exportLoading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Copy className="w-4 h-4 mr-2" />}
                                 Copy to Clipboard
                             </Button>
@@ -340,3 +340,5 @@ export default function AiAdvisor() {
         </div>
     );
 }
+
+

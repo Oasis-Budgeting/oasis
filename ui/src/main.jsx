@@ -7,7 +7,7 @@ import { ThemeProvider } from './components/ThemeProvider.jsx'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
     <React.StrictMode>
-        <ThemeProvider defaultTheme="dark" storageKey="bucket-budget-theme">
+        <ThemeProvider defaultTheme="system" storageKey="bucket-budget-theme">
             <App />
         </ThemeProvider>
     </React.StrictMode>,

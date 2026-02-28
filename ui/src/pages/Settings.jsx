@@ -59,11 +59,11 @@ export default function Settings() {
             )}
 
             {/* Age of Money Card */}
-            <Card className="bg-gradient-to-br from-indigo-900/40 to-violet-900/40 border-indigo-500/30 shadow-sm relative overflow-hidden">
+            <Card className="bg-gradient-to-br from-primary/25 to-accent/35 border-primary/30 shadow-sm relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-64 h-64 bg-secondary rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none" />
                 <CardContent className="p-6 relative z-10">
                     <div className="flex items-center gap-6">
-                        <div className="flex-shrink-0 w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-lg shadow-indigo-900/50">
+                        <div className="flex-shrink-0 w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-lg shadow-cyan-900/30">
                             <Clock className="w-8 h-8 text-card-foreground" />
                         </div>
                         <div>
@@ -138,7 +138,7 @@ export default function Settings() {
                                 <button
                                     key={theme.value}
                                     className={`relative group flex flex-col items-center p-4 rounded-3xl transition-all duration-200 ${settings.theme === theme.value
-                                        ? 'ring-2 ring-indigo-500 bg-muted/50'
+                                        ? 'ring-2 ring-primary bg-muted/50'
                                         : 'ring-1 ring-border hover:ring-muted-foreground/50 hover:bg-muted/30'
                                         }`}
                                     onClick={() => handleThemeChange(theme.value)}
@@ -153,7 +153,7 @@ export default function Settings() {
                                         <div className="p-2 space-y-2">
                                             <div className="w-1/2 h-2 rounded-full opacity-40" style={{ backgroundColor: theme.fg }} />
                                             <div className="flex gap-2">
-                                                <div className="w-4 h-4 rounded-sm bg-indigo-500" />
+                                                <div className="w-4 h-4 rounded-sm bg-primary" />
                                                 <div className="w-4 h-4 rounded-sm bg-emerald-500" />
                                                 <div className="w-4 h-4 rounded-sm bg-rose-500" />
                                             </div>
@@ -161,7 +161,7 @@ export default function Settings() {
                                     </div>
                                     <span className="text-sm font-medium text-muted-foreground group-hover:text-foreground transition-colors">{theme.label}</span>
                                     {settings.theme === theme.value && (
-                                        <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.8)]" />
+                                        <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-primary shadow-[0_0_8px_rgba(15,158,168,0.8)]" />
                                     )}
                                 </button>
                             ))}
@@ -186,10 +186,10 @@ export default function Settings() {
                             </Button>
                         </div>
 
-                        <div className="bg-secondary border border-indigo-500/20 rounded-3xl p-4 flex gap-3">
+                        <div className="bg-secondary border border-primary/20 rounded-3xl p-4 flex gap-3">
                             <div className="text-card-foreground mt-0.5">💡</div>
                             <div className="text-sm text-muted-foreground leading-relaxed">
-                                <span className="font-medium text-foreground/80">Tip:</span> Your SQLite database is stored at <code className="bg-black/30 px-1.5 py-0.5 rounded text-indigo-300 font-mono text-xs">/app/data/budget.db</code> in the Docker container.
+                                <span className="font-medium text-foreground/80">Tip:</span> Your SQLite database is stored at <code className="bg-black/30 px-1.5 py-0.5 rounded text-primary/80 font-mono text-xs">/app/data/budget.db</code> in the Docker container.
                                 Mount this as a volume for persistence. Back up this file for full data backup.
                             </div>
                         </div>
@@ -199,3 +199,4 @@ export default function Settings() {
         </div>
     );
 }
+

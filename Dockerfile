@@ -1,5 +1,5 @@
 # Build UI
-FROM node:20-alpine AS ui-build
+FROM node:20-bookworm-slim AS ui-build
 WORKDIR /app/ui
 COPY ui/package*.json ./
 RUN npm ci
@@ -7,14 +7,14 @@ COPY ui/ ./
 RUN npm run build
 
 # Build API
-FROM node:20-alpine AS api-build
+FROM node:20-bookworm-slim AS api-build
 WORKDIR /app/api
 COPY api/package*.json ./
 RUN npm ci --omit=dev
 COPY api/ ./
 
 # Production
-FROM node:20-alpine
+FROM node:20-bookworm-slim
 WORKDIR /app
 
 # Copy API
