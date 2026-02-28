@@ -15,6 +15,7 @@ async function request(url, options = {}) {
 
     const res = await fetch(`${BASE}${url}`, {
         headers,
+        cache: 'no-store', // Prevent browser from caching GET requests (e.g., budget list after creating a group)
         ...options,
         body: options.body ? JSON.stringify(options.body) : undefined
     });
@@ -136,9 +137,9 @@ export const importCSV = async (file, accountId) => {
 
 // Budget
 export const getBudget = (month) => request(`/budget/${month}`);
-export const getBudgetSummary = (month) => request(`/budgets/summary/${month}`);
-export const getBudgetDetails = (month) => request(`/budgets/details/${month}`);
-export const allocateBudget = (data) => request('/budgets/allocate', { method: 'POST', body: JSON.stringify(data) });
+export const getBudgetSummary = (month) => request(`/budget/summary/${month}`);
+export const getBudgetDetails = (month) => request(`/budget/details/${month}`);
+export const allocateBudget = (data) => request('/budget/allocate', { method: 'POST', body: JSON.stringify(data) });
 export const assignBudget = (month, categoryId, assigned) =>
     request(`/budget/${month}/${categoryId}`, { method: 'PUT', body: { assigned } });
 

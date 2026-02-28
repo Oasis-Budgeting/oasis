@@ -100,24 +100,36 @@ export default function Budget() {
     const handleAddGroup = async (e) => {
         e.preventDefault();
         if (!newGroupName.trim()) return;
-        await createCategoryGroup({ name: newGroupName });
-        setNewGroupName('');
-        setShowGroupModal(false);
-        loadData();
+        try {
+            await createCategoryGroup({ name: newGroupName });
+            setNewGroupName('');
+            setShowGroupModal(false);
+            setToast('Category group created!');
+            setTimeout(() => setToast(null), 3000);
+            loadData();
+        } catch (e) {
+            alert(e.message);
+        }
     };
 
     const handleAddCategory = async (e) => {
         e.preventDefault();
         if (!newCat.group_id || !newCat.name.trim()) return;
-        await createCategory({
-            ...newCat,
-            group_id: parseInt(newCat.group_id),
-            goal_amount: newCat.goal_amount ? parseFloat(newCat.goal_amount) : null,
-            goal_type: newCat.goal_type || null
-        });
-        setNewCat({ group_id: '', name: '', goal_type: '', goal_amount: '' });
-        setShowCatModal(false);
-        loadData();
+        try {
+            await createCategory({
+                ...newCat,
+                group_id: parseInt(newCat.group_id),
+                goal_amount: newCat.goal_amount ? parseFloat(newCat.goal_amount) : null,
+                goal_type: newCat.goal_type || null
+            });
+            setNewCat({ group_id: '', name: '', goal_type: '', goal_amount: '' });
+            setShowCatModal(false);
+            setToast('Category created!');
+            setTimeout(() => setToast(null), 3000);
+            loadData();
+        } catch (e) {
+            alert(e.message);
+        }
     };
 
     const handleEditCategory = async (e) => {
@@ -353,10 +365,35 @@ export default function Budget() {
             {groups.length === 0 && (
                 <div className="flex flex-col items-center justify-center py-24 text-center border-2 border-dashed border-border rounded-3xl bg-muted/50 mt-4">
                     <p className="text-lg font-medium text-muted-foreground mb-2">No budget categories yet</p>
-                    <p className="text-muted-foreground mb-6 max-w-sm">Create a group and add categories to start organizing your money.</p>
-                    <Button onClick={() => setShowGroupModal(true)} className="bg-primary text-primary-foreground hover:bg-primary/90">
-                        <Plus className="mr-2 h-4 w-4" /> Add your first group
-                    </Button>
+                    <p className="text-muted-foreground mb-6 max-w-sm">Create a group and add categories to start organizing your money, or load a default template.</p>
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                        <Button
+                            onClick={async () => {
+                                const tpl = BUDGET_TEMPLATES[1]; // Essentials First
+                                try {
+                                    setLoading(true);
+                                    for (const grp of tpl.groups) {
+                                        const g = await createCategoryGroup({ name: grp.name });
+                                        for (const catName of grp.categories) {
+                                            await createCategory({ group_id: g.id, name: catName });
+                                        }
+                                    }
+                                    setToast(`Template "${tpl.name}" applied!`);
+                                    setTimeout(() => setToast(null), 3000);
+                                    await loadData();
+                                } catch (e) {
+                                    alert(e.message);
+                                    setLoading(false);
+                                }
+                            }}
+                            className="bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                        >
+                            <Layers className="mr-2 h-4 w-4" /> Load Default Groups
+                        </Button>
+                        <Button onClick={() => setShowGroupModal(true)} className="bg-primary text-primary-foreground hover:bg-primary/90">
+                            <Plus className="mr-2 h-4 w-4" /> Add your first group
+                        </Button>
+                    </div>
                 </div>
             )}
 
