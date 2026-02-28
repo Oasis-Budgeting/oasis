@@ -1,6 +1,6 @@
 services:
   bucket-budget:
-    image: ghcr.io/suryavamsi6/bucket-budget:1.0.0
+    image: ghcr.io/suryavamsi6/bucket-budget:latest
     container_name: bucket-budget
     ports:
       - "3000:3000"
