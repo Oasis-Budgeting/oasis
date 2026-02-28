@@ -1,6 +1,6 @@
 services:
   oasis:
-    image: ghcr.io/suryavamsi6/oasis:latest
+    image: ghcr.io/oasis-budgeting/oasis:latest
     container_name: oasis
     ports:
       - "3000:3000"

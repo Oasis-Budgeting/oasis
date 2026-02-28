@@ -50,7 +50,7 @@ The easiest way to get Oasis running is by using Docker Compose.
 ```yaml
 services:
   oasis:
-    image: ghcr.io/suryavamsi6/oasis:latest
+    image: ghcr.io/oasis-budgeting/oasis:latest
     container_name: oasis
     ports:
       - "3000:3000"
