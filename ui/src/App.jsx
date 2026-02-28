@@ -201,7 +201,7 @@ function ProtectedLayout() {
                             transition={{ duration: 0.25, ease: "easeInOut" }}
                             className="mx-auto w-full max-w-[1400px] px-3 sm:px-5 lg:px-8"
                         >
-                            <Routes location={location} key={location.pathname}>
+                            <Routes location={location}>
                                 <Route path="/" element={<Dashboard />} />
                                 <Route path="/budget" element={<Budget />} />
                                 <Route path="/accounts" element={<Accounts />} />
@@ -235,9 +235,14 @@ function PublicRoute({ children }) {
 function AppContent() {
     const location = useLocation();
 
+    // Group all authenticated routes under a single key so the layout doesn't unmount
+    const authRoutes = ['/login', '/register', '/forgot-password', '/reset-password'];
+    const isAuthRoute = authRoutes.includes(location.pathname);
+    const topLevelKey = isAuthRoute ? location.pathname : 'app';
+
     return (
         <AnimatePresence mode="wait">
-            <Routes location={location} key={location.pathname.split('/')[1] || '/'}>
+            <Routes location={location} key={topLevelKey}>
                 <Route path="/login" element={
                     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="h-full">
                         <PublicRoute><Login /></PublicRoute>
