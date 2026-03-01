@@ -231,6 +231,7 @@ export default function Transactions() {
                         <Input
                             className="bg-card border-border text-card-foreground placeholder:text-muted-foreground focus-visible:ring-indigo-500 pl-9 w-full"
                             placeholder="Search payees, memos..."
+                            aria-label="Search transactions"
                             value={filters.search}
                             onChange={e => setFilters({ ...filters, search: e.target.value })}
                         />
@@ -240,6 +241,7 @@ export default function Transactions() {
                         className="flex h-10 w-full sm:w-[180px] rounded-xl border border-border bg-card px-3 py-2 text-sm text-card-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
                         value={filters.account_id}
                         onChange={e => setFilters({ ...filters, account_id: e.target.value, offset: 0 })}
+                        aria-label="Filter by account"
                     >
                         <option value="">All Accounts</option>
                         {accounts.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
@@ -251,6 +253,7 @@ export default function Transactions() {
                             className="bg-transparent border-none text-card-foreground focus-visible:ring-0 h-8 text-sm w-full sm:w-auto [&::-webkit-calendar-picker-indicator]:filter [&::-webkit-calendar-picker-indicator]:invert"
                             value={filters.from}
                             onChange={e => setFilters({ ...filters, from: e.target.value, offset: 0 })}
+                            aria-label="Filter from date"
                         />
                         <span className="text-muted-foreground text-sm font-medium">to</span>
                         <Input
@@ -258,6 +261,7 @@ export default function Transactions() {
                             className="bg-transparent border-none text-card-foreground focus-visible:ring-0 h-8 text-sm w-full sm:w-auto [&::-webkit-calendar-picker-indicator]:filter [&::-webkit-calendar-picker-indicator]:invert"
                             value={filters.to}
                             onChange={e => setFilters({ ...filters, to: e.target.value, offset: 0 })}
+                            aria-label="Filter to date"
                         />
                     </div>
                 </div>
@@ -299,6 +303,7 @@ export default function Transactions() {
                                                 className={`h-6 w-6 rounded-full hover:bg-secondary/80 ${txn.cleared ? 'text-emerald-500' : 'text-muted-foreground'}`}
                                                 onClick={() => toggleCleared(txn)}
                                                 title={txn.cleared ? 'Cleared' : 'Uncleared'}
+                                                aria-label={txn.cleared ? 'Mark as uncleared' : 'Mark as cleared'}
                                             >
                                                 {txn.cleared ? <CheckCircle className="h-4 w-4" /> : <AlertCircle className="h-4 w-4" />}
                                             </Button>
@@ -327,10 +332,10 @@ export default function Transactions() {
                                         </TableCell>
                                         <TableCell className="py-3 pr-4">
                                             <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-blue-400" onClick={() => openEdit(txn)} title="Edit">
+                                                <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-blue-400" onClick={() => openEdit(txn)} title="Edit" aria-label="Edit transaction">
                                                     <Edit className="h-3.5 w-3.5" />
                                                 </Button>
-                                                <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-rose-600" onClick={() => handleDelete(txn.id)} title="Delete">
+                                                <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-rose-600" onClick={() => handleDelete(txn.id)} title="Delete" aria-label="Delete transaction">
                                                     <Trash2 className="h-3.5 w-3.5" />
                                                 </Button>
                                             </div>
@@ -522,6 +527,7 @@ export default function Transactions() {
                                                 className="h-8 w-8 text-muted-foreground hover:text-rose-500 hover:bg-rose-500/10 shrink-0"
                                                 onClick={() => handleFileDelete(att.id)}
                                                 type="button"
+                                                aria-label="Delete attachment"
                                             >
                                                 <X className="h-4 w-4" />
                                             </Button>
@@ -535,6 +541,7 @@ export default function Transactions() {
                                             className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"
                                             onChange={handleFileUpload}
                                             disabled={isUploading}
+                                            aria-label="Attach file"
                                         />
                                         {isUploading ? (
                                             <Loader2 className="h-6 w-6 animate-spin text-primary mx-auto mb-2" />
@@ -603,6 +610,7 @@ export default function Transactions() {
                                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"
                                 onChange={handleImport}
                                 disabled={!importAccountId}
+                                aria-label="Upload CSV file"
                             />
                             <Upload className={`h-8 w-8 mx-auto mb-3 ${importAccountId ? 'text-card-foreground' : 'text-muted-foreground'}`} />
                             <p className="text-sm font-medium text-foreground/80 mb-1">

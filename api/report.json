@@ -1,0 +1,36 @@
+{
+  "individualResults": [
+    {
+      "initialSchemaVersion": null,
+      "targetSchemaVersion": "2",
+      "schemaName": "",
+      "migrations": [
+        {
+          "category": "Versioned",
+          "version": "1",
+          "description": "Initial Schema",
+          "type": "SQL",
+          "filepath": "/app/api/src/db/flyway/sql/V1__Initial_Schema.sql",
+          "executionTime": 4
+        },
+        {
+          "category": "Versioned",
+          "version": "2",
+          "description": "Add Username",
+          "type": "SQL",
+          "filepath": "/app/api/src/db/flyway/sql/V2__Add_Username.sql",
+          "executionTime": 1
+        }
+      ],
+      "migrationsExecuted": 2,
+      "success": true,
+      "flywayVersion": "9.22.3",
+      "database": null,
+      "warnings": [],
+      "timestamp": "2026-03-01T06:05:28.903654898",
+      "operation": "migrate",
+      "exception": null,
+      "licenseFailed": false
+    }
+  ]
+}
