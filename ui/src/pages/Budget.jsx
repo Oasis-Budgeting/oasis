@@ -89,15 +89,21 @@ export default function Budget() {
 
     const loadData = useCallback(async () => {
         setLoading(true);
+        console.log("Loading budget data for month:", month);
         try {
-            const [budgetData, summaryData] = await Promise.all([
-                getBudget(month),
-                getBudgetSummary(month)
-            ]);
+            const budgetData = await getBudget(month).catch(e => {
+                console.error('Failed to get budget:', e);
+                return [];
+            });
             setGroups(budgetData);
+
+            const summaryData = await getBudgetSummary(month).catch(e => {
+                console.error('Failed to get budget summary:', e);
+                return { to_be_budgeted: 0, total_income: 0, total_assigned: 0 };
+            });
             setSummary(summaryData);
         } catch (e) {
-            console.error(e);
+            console.error('Error during loadData:', e);
         }
         setLoading(false);
     }, [month]);
@@ -171,17 +177,30 @@ export default function Budget() {
         loadData();
     };
 
-    const handleDeleteCategory = async () => {
+    const handleDeleteCategory = async (e) => {
+        if (e && e.preventDefault) e.preventDefault();
+        console.log('handleDeleteCategory triggered for', editCat?.id);
         if (!editCat || !window.confirm('Delete this category? Transactions linked to it may become uncategorized.')) return;
         try {
-            await deleteCategory(editCat.id);
+            const catId = editCat.id;
+            console.log('Calling deleteCategory API...');
+            await deleteCategory(catId);
+            console.log('Delete successful');
+
+            // Aggressively update local state to reflect deletion immediately
+            setGroups(prevGroups => prevGroups.map(g => ({
+                ...g,
+                categories: g.categories.filter(c => c.id !== catId)
+            })));
+
             setEditCat(null);
             setShowEditCatModal(false);
             setToast('Category deleted!');
             setTimeout(() => setToast(null), 3000);
             loadData();
-        } catch (e) {
-            alert(e.message);
+        } catch (err) {
+            console.error('Delete failed:', err);
+            alert(err.message);
         }
     };
 
@@ -297,8 +316,31 @@ export default function Budget() {
                     <div key={group.id} className="bg-card border border-border rounded-3xl overflow-hidden shadow-sm">
 
                         {/* Group Header */}
-                        <div className="flex items-center justify-between px-4 py-3 bg-muted/50 border-b border-border">
-                            <h3 className="font-semibold text-foreground/80 text-lg w-1/3 min-w-[200px]">{group.name}</h3>
+                        <div className="flex items-center justify-between px-4 py-3 bg-muted/50 border-b border-border group/header">
+                            <div className="flex items-center gap-2 w-1/3 min-w-[200px]">
+                                <h3 className="font-semibold text-foreground/80 text-lg">{group.name}</h3>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-6 w-6 text-muted-foreground hover:text-rose-600 hover:bg-rose-500/10 opacity-0 group-hover/header:opacity-100 transition-opacity"
+                                    onClick={async (e) => {
+                                        e.stopPropagation();
+                                        if (!window.confirm(`Delete group "${group.name}" and all its categories?`)) return;
+                                        try {
+                                            await deleteCategoryGroup(group.id);
+                                            setGroups(prev => prev.filter(g => g.id !== group.id));
+                                            setToast('Group deleted!');
+                                            setTimeout(() => setToast(null), 3000);
+                                            loadData();
+                                        } catch (err) {
+                                            alert(err.message);
+                                        }
+                                    }}
+                                    title="Delete Group"
+                                >
+                                    <Trash2 className="h-3 w-3" />
+                                </Button>
+                            </div>
                             <div className="flex w-2/3 justify-end gap-2 md:gap-4">
                                 <div className="text-right w-1/3 min-w-[100px] text-xs font-semibold text-muted-foreground uppercase tracking-widest hidden sm:block">Assigned</div>
                                 <div className="text-right w-1/3 min-w-[100px] text-xs font-semibold text-muted-foreground uppercase tracking-widest hidden md:block">Activity</div>
@@ -408,9 +450,18 @@ export default function Budget() {
                                             </Button>
                                             <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-rose-600 hover:bg-rose-500/10" onClick={async (e) => {
                                                 e.stopPropagation();
+                                                e.preventDefault();
                                                 if (!window.confirm('Delete this category? Transactions linked to it may become uncategorized.')) return;
                                                 try {
-                                                    await deleteCategory(cat.id);
+                                                    const catId = cat.id;
+                                                    await deleteCategory(catId);
+
+                                                    // Aggressively update local state
+                                                    setGroups(prevGroups => prevGroups.map(g => ({
+                                                        ...g,
+                                                        categories: g.categories.filter(c => c.id !== catId)
+                                                    })));
+
                                                     setToast('Category deleted!');
                                                     setTimeout(() => setToast(null), 3000);
                                                     loadData();

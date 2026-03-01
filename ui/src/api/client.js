@@ -4,10 +4,10 @@ const getAuthToken = () => localStorage.getItem('bucket_budget_token');
 
 async function request(url, options = {}) {
     const token = getAuthToken();
-    const headers = {
-        'Content-Type': 'application/json',
-        ...options.headers
-    };
+    const headers = { ...options.headers };
+    if (options.body) {
+        headers['Content-Type'] = headers['Content-Type'] || 'application/json';
+    }
 
     if (token) {
         headers['Authorization'] = `Bearer ${token}`;
