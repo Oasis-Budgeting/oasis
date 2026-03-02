@@ -274,10 +274,10 @@ export default function Rules() {
                                 </TableCell>
                                 <TableCell className="text-right">
                                     <div className="flex items-center justify-end gap-2">
-                                        <Button variant="ghost" size="icon" onClick={() => handleEdit(rule)}>
+                                        <Button variant="ghost" size="icon" title="Edit" aria-label={`Edit rule for ${rule.match_value}`} onClick={() => handleEdit(rule)}>
                                             <Edit className="h-4 w-4" />
                                         </Button>
-                                        <Button variant="ghost" size="icon" className="text-rose-500 hover:text-rose-600 hover:bg-rose-50" onClick={() => handleDelete(rule.id)}>
+                                        <Button variant="ghost" size="icon" title="Delete" aria-label={`Delete rule for ${rule.match_value}`} className="text-rose-500 hover:text-rose-600 hover:bg-rose-50" onClick={() => handleDelete(rule.id)}>
                                             <Trash2 className="h-4 w-4" />
                                         </Button>
                                     </div>
