@@ -1,0 +1,297 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 196 38% 96%;
+    --foreground: 204 38% 14%;
+    --card: 0 0% 100%;
+    --card-foreground: 204 38% 14%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 204 38% 14%;
+    --primary: 188 76% 34%;
+    --primary-foreground: 192 83% 98%;
+    --secondary: 192 46% 92%;
+    --secondary-foreground: 204 38% 16%;
+    --muted: 193 30% 89%;
+    --muted-foreground: 203 19% 38%;
+    --accent: 35 85% 90%;
+    --accent-foreground: 30 42% 20%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 193 22% 81%;
+    --input: 193 22% 81%;
+    --ring: 188 76% 34%;
+    --tertiary: 255 46% 45%;
+    --tertiary-foreground: 0 0% 100%;
+    --success: 153 71% 34%;
+    --success-foreground: 0 0% 100%;
+    --warning: 35 92% 45%;
+    --warning-foreground: 35 100% 12%;
+    --info: 215 89% 52%;
+    --info-foreground: 0 0% 100%;
+    --chart-1: var(--primary);
+    --chart-2: var(--tertiary);
+    --chart-3: var(--success);
+    --chart-4: var(--warning);
+    --chart-5: var(--info);
+    --chart-grid: 203 20% 75%;
+    --chart-axis: 203 16% 45%;
+    --radius: 1rem;
+  }
+
+  .dark {
+    --background: 270 12% 10%;
+    --foreground: 285 17% 90%;
+    --card: 270 14% 13%;
+    --card-foreground: 285 17% 92%;
+    --popover: 270 14% 13%;
+    --popover-foreground: 285 17% 92%;
+    --primary: 266 85% 79%;
+    --primary-foreground: 270 33% 18%;
+    --secondary: 267 14% 23%;
+    --secondary-foreground: 285 15% 89%;
+    --muted: 267 13% 19%;
+    --muted-foreground: 280 10% 72%;
+    --accent: 320 43% 22%;
+    --accent-foreground: 316 58% 89%;
+    --destructive: 8 74% 61%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 268 11% 28%;
+    --input: 268 11% 28%;
+    --ring: 266 85% 79%;
+    --tertiary: 301 42% 74%;
+    --tertiary-foreground: 302 50% 16%;
+    --success: 142 50% 60%;
+    --success-foreground: 143 64% 14%;
+    --warning: 40 94% 69%;
+    --warning-foreground: 34 60% 14%;
+    --info: 214 95% 78%;
+    --info-foreground: 220 52% 18%;
+    --chart-1: var(--primary);
+    --chart-2: var(--tertiary);
+    --chart-3: var(--success);
+    --chart-4: var(--warning);
+    --chart-5: var(--info);
+    --chart-grid: 266 10% 30%;
+    --chart-axis: 272 12% 68%;
+  }
+
+  .midnight {
+    --background: 228 32% 8%;
+    --foreground: 220 37% 92%;
+    --card: 230 30% 11%;
+    --card-foreground: 220 37% 94%;
+    --popover: 230 30% 11%;
+    --popover-foreground: 220 37% 94%;
+    --primary: 217 93% 76%;
+    --primary-foreground: 224 45% 16%;
+    --secondary: 225 24% 18%;
+    --secondary-foreground: 220 30% 91%;
+    --muted: 226 22% 15%;
+    --muted-foreground: 220 17% 72%;
+    --accent: 194 66% 20%;
+    --accent-foreground: 190 80% 86%;
+    --destructive: 8 74% 61%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 225 19% 24%;
+    --input: 225 19% 24%;
+    --ring: 217 93% 76%;
+    --tertiary: 278 72% 77%;
+    --tertiary-foreground: 274 52% 17%;
+    --success: 155 52% 60%;
+    --success-foreground: 155 64% 14%;
+    --warning: 42 98% 71%;
+    --warning-foreground: 40 65% 15%;
+    --info: 203 91% 71%;
+    --info-foreground: 208 55% 16%;
+    --chart-1: var(--primary);
+    --chart-2: var(--tertiary);
+    --chart-3: var(--success);
+    --chart-4: var(--warning);
+    --chart-5: var(--info);
+    --chart-grid: 225 15% 28%;
+    --chart-axis: 220 15% 68%;
+  }
+
+  .amoled {
+    --background: 0 0% 0%;
+    --foreground: 270 18% 93%;
+    --card: 260 14% 8%;
+    --card-foreground: 270 18% 94%;
+    --popover: 260 14% 8%;
+    --popover-foreground: 270 18% 94%;
+    --primary: 271 100% 83%;
+    --primary-foreground: 274 36% 17%;
+    --secondary: 258 11% 14%;
+    --secondary-foreground: 270 15% 91%;
+    --muted: 258 9% 11%;
+    --muted-foreground: 270 9% 73%;
+    --accent: 333 56% 19%;
+    --accent-foreground: 328 69% 88%;
+    --destructive: 8 74% 61%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 258 10% 19%;
+    --input: 258 10% 19%;
+    --ring: 271 100% 83%;
+    --tertiary: 314 58% 78%;
+    --tertiary-foreground: 314 60% 16%;
+    --success: 151 52% 63%;
+    --success-foreground: 151 70% 13%;
+    --warning: 42 98% 71%;
+    --warning-foreground: 40 65% 15%;
+    --info: 205 94% 78%;
+    --info-foreground: 208 55% 16%;
+    --chart-1: var(--primary);
+    --chart-2: var(--tertiary);
+    --chart-3: var(--success);
+    --chart-4: var(--warning);
+    --chart-5: var(--info);
+    --chart-grid: 258 8% 23%;
+    --chart-axis: 270 8% 70%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply text-foreground antialiased transition-colors duration-300;
+    font-family: "Manrope", "Segoe UI", sans-serif;
+    min-height: 100vh;
+    background:
+      radial-gradient(circle at 12% 14%, hsl(190 95% 88% / 0.45), transparent 30%),
+      radial-gradient(circle at 80% 0%, hsl(35 100% 85% / 0.35), transparent 35%),
+      linear-gradient(160deg, hsl(var(--background)) 0%, hsl(197 40% 95%) 54%, hsl(204 44% 92%) 100%);
+    letter-spacing: -0.012em;
+  }
+
+  .dark body {
+    background:
+      radial-gradient(circle at 10% 8%, hsl(181 70% 40% / 0.24), transparent 28%),
+      radial-gradient(circle at 88% 0%, hsl(35 90% 55% / 0.2), transparent 34%),
+      linear-gradient(160deg, hsl(var(--background)) 0%, hsl(205 47% 9%) 58%, hsl(210 55% 7%) 100%);
+  }
+
+  .midnight body {
+    background:
+      radial-gradient(circle at 12% 10%, hsl(217 85% 62% / 0.25), transparent 32%),
+      radial-gradient(circle at 86% 2%, hsl(192 88% 45% / 0.16), transparent 34%),
+      linear-gradient(165deg, hsl(var(--background)) 0%, hsl(227 36% 8%) 56%, hsl(230 42% 6%) 100%);
+  }
+
+  .amoled body {
+    background:
+      radial-gradient(circle at 15% 11%, hsl(271 100% 76% / 0.2), transparent 30%),
+      radial-gradient(circle at 82% 3%, hsl(333 78% 56% / 0.14), transparent 34%),
+      linear-gradient(180deg, hsl(var(--background)) 0%, hsl(0 0% 0%) 100%);
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  .font-display {
+    font-family: "Sora", "Segoe UI", sans-serif;
+    letter-spacing: -0.03em;
+  }
+}
+
+@layer components {
+  .app-shell {
+    position: relative;
+    isolation: isolate;
+  }
+
+  .app-shell::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(hsl(var(--border) / 0.18) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(var(--border) / 0.18) 1px, transparent 1px);
+    background-size: 40px 40px;
+    mask-image: radial-gradient(circle at 50% 40%, black 35%, transparent 80%);
+    pointer-events: none;
+    z-index: -1;
+  }
+
+  .glass-surface {
+    background: hsl(var(--card) / 0.8);
+    border: 1px solid hsl(var(--border) / 0.6);
+    box-shadow:
+      0 22px 40px -26px hsl(200 65% 20% / 0.5),
+      inset 0 1px 0 hsl(0 0% 100% / 0.7);
+    backdrop-filter: blur(18px);
+  }
+
+  .dark .glass-surface {
+    box-shadow:
+      0 30px 60px -34px hsl(210 95% 3% / 0.8),
+      inset 0 1px 0 hsl(180 45% 75% / 0.18);
+  }
+
+  .amoled .glass-surface {
+    box-shadow:
+      0 28px 52px -36px hsl(0 0% 0% / 0.95),
+      inset 0 1px 0 hsl(271 50% 85% / 0.14);
+  }
+
+  .nav-link {
+    @apply flex items-center rounded-2xl px-4 py-2 text-sm font-semibold text-muted-foreground transition-all duration-200;
+  }
+
+  .nav-link:hover {
+    background: hsl(var(--secondary) / 0.7);
+    color: hsl(var(--foreground));
+    transform: translateX(3px);
+  }
+
+  .nav-link-active {
+    background: linear-gradient(125deg, hsl(var(--primary) / 0.2), hsl(var(--accent) / 0.35));
+    color: hsl(var(--foreground));
+    box-shadow: inset 0 0 0 1px hsl(var(--border)), 0 8px 16px -12px hsl(var(--primary) / 0.8);
+  }
+
+  .page-fade-in {
+    animation: pageFadeIn 420ms cubic-bezier(0.2, 0.9, 0.2, 1);
+  }
+
+  @keyframes pageFadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  *::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, hsl(var(--muted-foreground) / 0.7), hsl(var(--muted-foreground) / 0.4));
+    border-radius: 999px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+  }
+
+  *::-webkit-scrollbar-track {
+    background: hsl(var(--muted) / 0.25);
+  }
+
+}

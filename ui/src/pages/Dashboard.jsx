@@ -8,7 +8,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../co
 import { Button } from '../components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../components/ui/table';
 
-const COLORS = ['#6366f1', '#10b981', '#ef4444', '#f59e0b', '#3b82f6', '#8b5cf6', '#f97316', '#ec4899'];
+const COLORS = [
+    'hsl(var(--chart-1))',
+    'hsl(var(--chart-2))',
+    'hsl(var(--chart-3))',
+    'hsl(var(--chart-4))',
+    'hsl(var(--chart-5))'
+];
 
 export default function Dashboard() {
     const { fmt } = useSettings();
@@ -59,7 +65,7 @@ export default function Dashboard() {
     if (loading) {
         return (
             <div className="flex h-[50vh] items-center justify-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500"></div>
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
             </div>
         );
     }
@@ -67,60 +73,59 @@ export default function Dashboard() {
     return (
         <div className="space-y-6">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
-                <Card className="bg-card border-border shadow-sm hover:shadow-md transition-shadow">
+                <Card className="bg-surface-container-low border-outline-variant/30 shadow-sm hover:shadow-md transition-shadow">
                     <CardHeader className="pb-2">
                         <CardTitle className="text-sm font-medium text-muted-foreground/80">Net Worth</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className={`text-2xl font-bold ${totalBalance >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
+                        <div className={`text-2xl font-medium ${totalBalance >= 0 ? 'text-success' : 'text-destructive'}`}>
                             {fmt(totalBalance)}
                         </div>
                         <p className="text-xs text-muted-foreground mt-1">{netWorthAccounts.length} active accounts</p>
                     </CardContent>
                 </Card>
 
-                <Card className="bg-gradient-to-br from-indigo-500/90 via-purple-600/90 to-blue-600/90 border-none shadow-lg shadow-indigo-500/20 text-white relative overflow-hidden">
-                    <div className="absolute inset-0 bg-white/5 opacity-50 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-white/20 via-white/5 to-transparent mix-blend-overlay"></div>
-                    <CardHeader className="pb-2 relative z-10">
-                        <CardTitle className="text-sm font-medium text-indigo-100">To Be Budgeted</CardTitle>
+                <Card className="border-none bg-primary text-primary-foreground shadow-sm relative overflow-hidden">
+                    <CardHeader className="pb-2">
+                        <CardTitle className="text-sm font-medium text-primary-foreground/85">To Be Budgeted</CardTitle>
                     </CardHeader>
-                    <CardContent className="relative z-10">
-                        <div className="text-2xl font-bold tracking-tight text-white drop-shadow-sm">
+                    <CardContent>
+                        <div className="text-2xl font-medium tracking-tight text-primary-foreground">
                             {fmt(summary?.to_be_budgeted)}
                         </div>
-                        <p className="text-xs text-indigo-200 mt-1 font-medium">Available to assign</p>
+                        <p className="text-xs text-primary-foreground/70 mt-1 font-medium">Available to assign</p>
                     </CardContent>
                 </Card>
 
-                <Card className="bg-card border-border shadow-sm hover:shadow-md transition-shadow">
+                <Card className="bg-surface-container-low border-outline-variant/30 shadow-sm hover:shadow-md transition-shadow">
                     <CardHeader className="pb-2 flex flex-row items-center justify-between space-y-0">
                         <CardTitle className="text-sm font-medium text-muted-foreground/80">Income</CardTitle>
-                        <TrendingUp className="h-4 w-4 text-emerald-500" />
+                        <TrendingUp className="h-4 w-4 text-success" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold text-emerald-500">{fmt(summary?.month_income)}</div>
+                        <div className="text-2xl font-medium text-success">{fmt(summary?.month_income)}</div>
                         <p className="text-xs text-muted-foreground mt-1">This month</p>
                     </CardContent>
                 </Card>
 
-                <Card className="bg-card border-border shadow-sm hover:shadow-md transition-shadow">
+                <Card className="bg-surface-container-low border-outline-variant/30 shadow-sm hover:shadow-md transition-shadow">
                     <CardHeader className="pb-2 flex flex-row items-center justify-between space-y-0">
                         <CardTitle className="text-sm font-medium text-muted-foreground/80">Expenses</CardTitle>
-                        <TrendingDown className="h-4 w-4 text-rose-500" />
+                        <TrendingDown className="h-4 w-4 text-destructive" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold text-rose-500">{fmt(summary?.month_expenses)}</div>
+                        <div className="text-2xl font-medium text-destructive">{fmt(summary?.month_expenses)}</div>
                         <p className="text-xs text-muted-foreground mt-1">This month</p>
                     </CardContent>
                 </Card>
 
-                <Card className="bg-card border-border shadow-sm hover:shadow-md transition-shadow">
+                <Card className="bg-surface-container-low border-outline-variant/30 shadow-sm hover:shadow-md transition-shadow">
                     <CardHeader className="pb-2 flex flex-row items-center justify-between space-y-0">
                         <CardTitle className="text-sm font-medium text-muted-foreground/80">Age of Money</CardTitle>
-                        <Clock className="h-4 w-4 text-indigo-400" />
+                        <Clock className="h-4 w-4 text-info" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold text-card-foreground">
+                        <div className="text-2xl font-medium text-card-foreground">
                             {ageOfMoney ? `${ageOfMoney.age}d` : '—'}
                         </div>
                         <p className="text-xs text-muted-foreground mt-1">Days money sits</p>
@@ -129,7 +134,7 @@ export default function Dashboard() {
             </div>
 
             {/* Net Worth Graph (Full Width) */}
-            <Card className="bg-card border-border shadow-sm">
+            <Card className="bg-surface-container-low border-outline-variant/30 shadow-sm">
                 <CardHeader className="pb-2">
                     <CardTitle className="text-lg font-semibold">Net Worth Histroy</CardTitle>
                 </CardHeader>
@@ -140,12 +145,12 @@ export default function Dashboard() {
                                 <AreaChart data={netWorthTracker} margin={{ top: 5, right: 0, left: -20, bottom: 0 }}>
                                     <defs>
                                         <linearGradient id="colorNetWorth" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
-                                            <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
+                                            <stop offset="5%" stopColor="hsl(var(--success))" stopOpacity={0.3} />
+                                            <stop offset="95%" stopColor="hsl(var(--success))" stopOpacity={0} />
                                         </linearGradient>
                                         <linearGradient id="colorLiabilities" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="5%" stopColor="#f43f5e" stopOpacity={0.3} />
-                                            <stop offset="95%" stopColor="#f43f5e" stopOpacity={0} />
+                                            <stop offset="5%" stopColor="hsl(var(--destructive))" stopOpacity={0.3} />
+                                            <stop offset="95%" stopColor="hsl(var(--destructive))" stopOpacity={0} />
                                         </linearGradient>
                                     </defs>
                                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" opacity={0.5} />
@@ -169,8 +174,8 @@ export default function Dashboard() {
                                         formatter={(value, name) => [value >= 0 ? fmt(value) : `-${fmt(Math.abs(value))}`, name.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())]}
                                     />
                                     <Area type="monotone" dataKey="assets" stackId="1" stroke="none" fill="none" activeDot={false} />
-                                    <Area type="monotone" dataKey="liabilities" stackId="2" stroke="#f43f5e" strokeWidth={2} fillOpacity={1} fill="url(#colorLiabilities)" />
-                                    <Area type="monotone" dataKey="net_worth" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#colorNetWorth)" />
+                                    <Area type="monotone" dataKey="liabilities" stackId="2" stroke="hsl(var(--destructive))" strokeWidth={2} fillOpacity={1} fill="url(#colorLiabilities)" />
+                                    <Area type="monotone" dataKey="net_worth" stroke="hsl(var(--success))" strokeWidth={3} fillOpacity={1} fill="url(#colorNetWorth)" />
                                 </AreaChart>
                             </ResponsiveContainer>
                         ) : (
@@ -183,7 +188,7 @@ export default function Dashboard() {
             </Card>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <Card className="bg-card border-border shadow-sm">
+                <Card className="bg-surface-container-low border-outline-variant/30 shadow-sm">
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
                         <CardTitle className="text-lg font-semibold">Accounts</CardTitle>
                         <Button variant="ghost" size="sm" asChild className="text-muted-foreground hover:text-primary hover:bg-muted">
@@ -193,9 +198,9 @@ export default function Dashboard() {
                     <CardContent>
                         <div className="space-y-4 pt-4">
                             {accounts.length > 0 ? accounts.map(acc => (
-                                <div key={acc.id} className="flex items-center justify-between border-b border-border/60 pb-4 last:border-0 last:pb-0 hover:bg-muted/30 p-2 rounded-xl transition-colors">
+                                <div key={acc.id} className="flex items-center justify-between border-b border-outline-variant/30/60 pb-4 last:border-0 last:pb-0 hover:bg-surface-container/50 p-2 rounded-xl transition-colors">
                                     <div className="flex items-center space-x-4">
-                                        <div className="h-10 w-10 rounded-full bg-secondary flex items-center justify-center border border-border/50">
+                                        <div className="h-10 w-10 rounded-full bg-secondary flex items-center justify-center border border-outline-variant/30/50">
                                             <Wallet className="h-5 w-5 text-muted-foreground" />
                                         </div>
                                         <div>
@@ -203,7 +208,7 @@ export default function Dashboard() {
                                             <p className="text-xs text-muted-foreground mt-1 capitalize">{acc.type.replace('_', ' ')}</p>
                                         </div>
                                     </div>
-                                    <div className={`font-mono text-sm font-semibold tracking-tight ${parseFloat(acc.balance) >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
+                                    <div className={`font-mono text-sm font-semibold tracking-tight ${parseFloat(acc.balance) >= 0 ? 'text-success' : 'text-destructive'}`}>
                                         {fmt(acc.balance)}
                                     </div>
                                 </div>
@@ -214,7 +219,7 @@ export default function Dashboard() {
                     </CardContent>
                 </Card>
 
-                <Card className="bg-card border-border shadow-sm hover:shadow-md transition-shadow">
+                <Card className="bg-surface-container-low border-outline-variant/30 shadow-sm hover:shadow-md transition-shadow">
                     <CardHeader>
                         <CardTitle className="text-lg font-semibold">Spending This Month</CardTitle>
                     </CardHeader>
@@ -247,7 +252,7 @@ export default function Dashboard() {
                                 </ResponsiveContainer>
                                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-4 w-full px-2">
                                     {spending.slice(0, 6).map((s, i) => (
-                                        <div key={i} className="flex items-center space-x-2 bg-muted/30 p-1.5 rounded-lg border border-border/40 hover:bg-muted/50 transition-colors">
+                                        <div key={i} className="flex items-center space-x-2 bg-surface-container/50 p-1.5 rounded-lg border border-outline-variant/30/40 hover:bg-surface-container/50 transition-colors">
                                             <div className="h-3 w-3 rounded-full flex-shrink-0 shadow-sm" style={{ backgroundColor: COLORS[i % COLORS.length] }} />
                                             <span className="text-xs font-medium text-foreground/80 truncate" title={s.category || 'Uncategorized'}>
                                                 {s.category || 'Uncategorized'}
@@ -265,7 +270,7 @@ export default function Dashboard() {
                 </Card>
             </div>
 
-            <Card className="bg-card border-border shadow-sm">
+            <Card className="bg-surface-container-low border-outline-variant/30 shadow-sm">
                 <CardHeader className="flex flex-row items-center justify-between">
                     <CardTitle className="text-lg font-semibold">Recent Transactions</CardTitle>
                     <Button variant="ghost" size="sm" asChild className="text-muted-foreground hover:text-primary hover:bg-muted">
@@ -273,10 +278,10 @@ export default function Dashboard() {
                     </Button>
                 </CardHeader>
                 <CardContent>
-                    <div className="rounded-xl border border-border/50 overflow-hidden bg-card/50">
+                    <div className="rounded-xl border border-outline-variant/30 overflow-hidden bg-surface-container-low">
                         <Table>
-                            <TableHeader className="bg-muted/50 backdrop-blur-sm">
-                                <TableRow className="border-border/50 hover:bg-transparent">
+                            <TableHeader className="bg-surface-container">
+                                <TableRow className="border-outline-variant/30/50 hover:bg-transparent">
                                     <TableHead className="text-muted-foreground font-semibold">Date</TableHead>
                                     <TableHead className="text-muted-foreground font-semibold">Payee</TableHead>
                                     <TableHead className="text-muted-foreground font-semibold">Category</TableHead>
@@ -287,7 +292,7 @@ export default function Dashboard() {
                             </TableHeader>
                             <TableBody>
                                 {transactions.map(txn => (
-                                    <TableRow key={txn.id} className="border-border/50 hover:bg-muted/50 transition-colors">
+                                    <TableRow key={txn.id} className="border-outline-variant/30/50 hover:bg-surface-container/50 transition-colors">
                                         <TableCell className="text-muted-foreground font-medium">{txn.date}</TableCell>
                                         <TableCell className="text-card-foreground font-medium">{txn.payee || '—'}</TableCell>
                                         <TableCell>
@@ -296,13 +301,13 @@ export default function Dashboard() {
                                             </span>
                                         </TableCell>
                                         <TableCell className="text-muted-foreground">{txn.account_name}</TableCell>
-                                        <TableCell className={`text-right font-mono font-semibold tracking-tight ${parseFloat(txn.amount) >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
+                                        <TableCell className={`text-right font-mono font-semibold tracking-tight ${parseFloat(txn.amount) >= 0 ? 'text-success' : 'text-destructive'}`}>
                                             {fmt(txn.amount)}
                                         </TableCell>
                                         <TableCell className="text-center">
                                             {txn.cleared ?
-                                                <CheckCircle className="h-4 w-4 text-emerald-500 mx-auto" /> :
-                                                <AlertCircle className="h-4 w-4 text-amber-500 mx-auto" />
+                                                <CheckCircle className="h-4 w-4 text-success mx-auto" /> :
+                                                <AlertCircle className="h-4 w-4 text-warning mx-auto" />
                                             }
                                         </TableCell>
                                     </TableRow>
@@ -323,17 +328,17 @@ export default function Dashboard() {
             {/* Widgets Row */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Insights Widget */}
-                <Card className="bg-card border-border shadow-sm">
+                <Card className="bg-surface-container-low border-outline-variant/30 shadow-sm">
                     <CardHeader className="pb-2 flex flex-row items-center justify-between">
-                        <CardTitle className="text-base font-semibold flex items-center gap-2"><Lightbulb className="w-4 h-4 text-amber-500" /> Insights</CardTitle>
+                        <CardTitle className="text-base font-semibold flex items-center gap-2"><Lightbulb className="w-4 h-4 text-warning" /> Insights</CardTitle>
                     </CardHeader>
                     <CardContent>
                         {insights.length > 0 ? (
                             <div className="space-y-2">
                                 {insights.slice(0, 4).map((insight, i) => (
-                                    <div key={i} className={`p-3 rounded-xl text-xs ${insight.severity === 'warning' ? 'bg-amber-500/10 text-amber-500' :
-                                        insight.severity === 'success' ? 'bg-emerald-500/10 text-emerald-500' :
-                                            'bg-indigo-500/10 text-indigo-400'
+                                    <div key={i} className={`p-3 rounded-xl text-xs ${insight.severity === 'warning' ? 'bg-warning/10 text-warning' :
+                                        insight.severity === 'success' ? 'bg-success/10 text-success' :
+                                            'bg-info/10 text-info'
                                         }`}>
                                         <div className="font-semibold">{insight.icon} {insight.title}</div>
                                         <div className="mt-0.5 opacity-80">{insight.description}</div>
@@ -347,9 +352,9 @@ export default function Dashboard() {
                 </Card>
 
                 {/* Goals Widget */}
-                <Card className="bg-card border-border shadow-sm">
+                <Card className="bg-surface-container-low border-outline-variant/30 shadow-sm">
                     <CardHeader className="pb-2 flex flex-row items-center justify-between">
-                        <CardTitle className="text-base font-semibold flex items-center gap-2"><Target className="w-4 h-4 text-indigo-500" /> Goals</CardTitle>
+                        <CardTitle className="text-base font-semibold flex items-center gap-2"><Target className="w-4 h-4 text-primary" /> Goals</CardTitle>
                         <Button variant="ghost" size="sm" asChild className="text-muted-foreground hover:text-primary hover:bg-muted">
                             <Link to="/goals">View all <ArrowRight className="ml-1 h-3 w-3" /></Link>
                         </Button>
@@ -366,20 +371,20 @@ export default function Dashboard() {
                                                 <span className="text-muted-foreground">{pct.toFixed(0)}%</span>
                                             </div>
                                             <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
-                                                <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, backgroundColor: goal.color || '#6366f1' }} />
+                                                <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, backgroundColor: goal.color || 'hsl(var(--primary))' }} />
                                             </div>
                                         </div>
                                     );
                                 })}
                             </div>
                         ) : (
-                            <p className="text-sm text-muted-foreground text-center py-6">No active goals — <Link to="/goals" className="text-indigo-500 hover:underline">create one</Link></p>
+                            <p className="text-sm text-muted-foreground text-center py-6">No active goals — <Link to="/goals" className="text-primary hover:underline">create one</Link></p>
                         )}
                     </CardContent>
                 </Card>
 
                 {/* Portfolio + Debt Widget */}
-                <Card className="bg-card border-border shadow-sm">
+                <Card className="bg-surface-container-low border-outline-variant/30 shadow-sm">
                     <CardHeader className="pb-2">
                         <CardTitle className="text-base font-semibold">Portfolio & Debt</CardTitle>
                     </CardHeader>
@@ -387,7 +392,7 @@ export default function Dashboard() {
                         {investments.length > 0 && (
                             <div>
                                 <div className="text-xs text-muted-foreground mb-1 flex items-center gap-1"><TrendingUp className="w-3 h-3" /> Investments</div>
-                                <div className="text-xl font-bold text-emerald-500">
+                                <div className="text-xl font-medium text-success">
                                     {fmt(investments.reduce((s, inv) => s + parseFloat(inv.quantity) * parseFloat(inv.current_price), 0))}
                                 </div>
                                 <div className="text-[10px] text-muted-foreground">{investments.length} assets tracked</div>
@@ -396,14 +401,14 @@ export default function Dashboard() {
                         {debts.length > 0 && (
                             <div>
                                 <div className="text-xs text-muted-foreground mb-1 flex items-center gap-1"><Landmark className="w-3 h-3" /> Total Debt</div>
-                                <div className="text-xl font-bold text-rose-500">
+                                <div className="text-xl font-medium text-destructive">
                                     {fmt(debts.reduce((s, d) => s + parseFloat(d.balance), 0))}
                                 </div>
                                 <div className="text-[10px] text-muted-foreground">{debts.length} debts tracked</div>
                             </div>
                         )}
                         {investments.length === 0 && debts.length === 0 && (
-                            <p className="text-sm text-muted-foreground text-center py-6">Track <Link to="/investments" className="text-indigo-500 hover:underline">investments</Link> or <Link to="/debts" className="text-indigo-500 hover:underline">debts</Link></p>
+                            <p className="text-sm text-muted-foreground text-center py-6">Track <Link to="/investments" className="text-primary hover:underline">investments</Link> or <Link to="/debts" className="text-primary hover:underline">debts</Link></p>
                         )}
                     </CardContent>
                 </Card>
