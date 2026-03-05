@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { getSettings, updateSettings as apiUpdateSettings } from '../api/client.js';
 import { useAuth } from '../context/AuthContext.jsx';
+import { useTheme } from '../components/ThemeProvider.jsx';
 
 const CURRENCIES = [
     { code: 'USD', symbol: '$', name: 'US Dollar', locale: 'en-US' },
@@ -29,6 +30,7 @@ const SettingsContext = createContext(null);
 
 export function SettingsProvider({ children }) {
     const { user } = useAuth();
+    const { setTheme } = useTheme();
     const defaults = {
         currency: 'USD',
         locale: 'en-US',
@@ -48,22 +50,21 @@ export function SettingsProvider({ children }) {
         getSettings()
             .then(s => {
                 setSettings(prev => ({ ...defaults, ...prev, ...s }));
-                if (s.theme) document.documentElement.setAttribute('data-theme', s.theme);
+                setTheme(s?.theme || defaults.theme);
                 setLoaded(true);
             })
             .catch(() => setLoaded(true));
-    }, [user]);
+    }, [user, setTheme]);
 
     const updateSettings = useCallback(async (updates) => {
         const newSettings = await apiUpdateSettings(updates);
         setSettings(newSettings);
 
-        // Apply theme
         if (updates.theme) {
-            document.documentElement.setAttribute('data-theme', updates.theme);
+            setTheme(updates.theme);
         }
         return newSettings;
-    }, []);
+    }, [setTheme]);
 
     const fmt = useCallback((n) => {
         const num = parseFloat(n) || 0;

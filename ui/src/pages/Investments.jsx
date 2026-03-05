@@ -189,46 +189,42 @@ export default function Investments() {
         <div className="max-w-6xl mx-auto space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                 <div className="flex items-center gap-3">
-                    <div className="p-2 bg-emerald-500/10 rounded-2xl text-emerald-600">
+                    <div className="p-2 bg-success/10 rounded-2xl text-success">
                         <TrendingUp className="h-6 w-6" />
                     </div>
                     <div>
-                        <h2 className="text-2xl font-bold tracking-tight text-card-foreground">Investments</h2>
+                        <h2 className="text-2xl font-medium tracking-tight text-card-foreground">Investments</h2>
                         <p className="text-muted-foreground">Track your portfolio performance and assets.</p>
                     </div>
                 </div>
                 <div>
-                    <Button onClick={openNew} className="bg-emerald-600 hover:bg-emerald-700 text-white w-full sm:w-auto">
+                    <Button onClick={openNew} className="bg-success hover:bg-success/90 text-success-foreground w-full sm:w-auto">
                         <Plus className="mr-2 h-4 w-4" /> Add Asset
                     </Button>
                 </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <Card className="relative overflow-hidden border-none bg-gradient-to-br from-primary/90 via-primary/80 to-accent/90 text-primary-foreground shadow-lg shadow-cyan-900/20">
-                    <div className="absolute inset-0 bg-white/5 opacity-50 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-white/20 via-white/5 to-transparent mix-blend-overlay"></div>
-                    <div className="absolute -top-6 -right-6 p-4 opacity-10 pointer-events-none transform rotate-12">
-                        <span className="text-[128px] font-bold leading-none select-none">{settings.currency_symbol || '$'}</span>
-                    </div>
+                <Card className="relative overflow-hidden border-none bg-primary text-primary-foreground shadow-sm">
                     <CardHeader className="pb-2 relative z-10">
-                        <CardDescription className="text-primary-foreground/80 font-medium tracking-wide text-xs uppercase">Total Portfolio Value</CardDescription>
-                        <CardTitle className="text-4xl font-bold text-primary-foreground tracking-tight drop-shadow-sm">{fmt(totalValue)}</CardTitle>
+                        <CardDescription className="text-primary-foreground/80 font-medium text-xs">Total Portfolio Value</CardDescription>
+                        <CardTitle className="text-4xl font-medium text-primary-foreground tracking-tight">{fmt(totalValue)}</CardTitle>
                     </CardHeader>
                 </Card>
-                <Card className="bg-card border-border shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
+                <Card className="bg-surface-container-low border-outline-variant/30 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
                     <CardHeader className="pb-2 relative z-10">
-                        <CardDescription className="text-muted-foreground font-medium tracking-wide text-xs uppercase">Total Cost Basis</CardDescription>
-                        <CardTitle className="text-3xl font-bold tracking-tight text-card-foreground">{fmt(totalCost)}</CardTitle>
+                        <CardDescription className="text-muted-foreground font-medium text-xs">Total Cost Basis</CardDescription>
+                        <CardTitle className="text-3xl font-medium tracking-tight text-card-foreground">{fmt(totalCost)}</CardTitle>
                     </CardHeader>
                 </Card>
-                <Card className="bg-card border-border shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
+                <Card className="bg-surface-container-low border-outline-variant/30 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
                     <CardHeader className="pb-2 relative z-10">
-                        <CardDescription className="text-muted-foreground font-medium tracking-wide text-xs uppercase">Total Unrealized Gain</CardDescription>
-                        <CardTitle className={`text-3xl font-bold tracking-tight flex items-center gap-2 ${totalGain >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
+                        <CardDescription className="text-muted-foreground font-medium text-xs">Total Unrealized Gain</CardDescription>
+                        <CardTitle className={`text-3xl font-medium tracking-tight flex items-center gap-2 ${totalGain >= 0 ? 'text-success' : 'text-destructive'}`}>
                             {totalGain >= 0 ? <TrendingUp className="w-6 h-6" /> : <TrendingDown className="w-6 h-6" />}
                             {fmt(Math.abs(totalGain))}
                         </CardTitle>
-                        <div className={`text-sm font-semibold mt-1 bg-opacity-10 px-2 py-0.5 rounded-full inline-flex w-fit ${totalGain >= 0 ? 'bg-emerald-500 text-emerald-500' : 'bg-rose-500 text-rose-500'}`}>
+                        <div className={`text-sm font-semibold mt-1 bg-opacity-10 px-2 py-0.5 rounded-full inline-flex w-fit ${totalGain >= 0 ? 'bg-success/10 text-success' : 'bg-destructive/10 text-destructive'}`}>
                             {totalGain >= 0 ? '+' : ''}{totalGainPercent.toFixed(2)}%
                         </div>
                     </CardHeader>
@@ -238,11 +234,11 @@ export default function Investments() {
             {loading ? (
                 <div className="text-center py-20 text-muted-foreground">Loading portfolio...</div>
             ) : items.length === 0 ? (
-                <div className="text-center py-20 bg-muted/50 rounded-3xl border border-dashed border-border">
+                <div className="text-center py-20 bg-surface-container/50 rounded-xl border border-dashed border-outline-variant/30">
                     <Activity className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                     <h3 className="text-lg font-medium text-muted-foreground">No assets tracked</h3>
                     <p className="text-muted-foreground mt-1 max-w-sm mx-auto">Add stocks, crypto, or other assets to start tracking your net worth accurately.</p>
-                    <Button onClick={openNew} className="mt-6 bg-emerald-600 hover:bg-emerald-700 text-white">
+                    <Button onClick={openNew} className="mt-6 bg-success hover:bg-success/90 text-success-foreground">
                         <Plus className="mr-2 h-4 w-4" /> Add your first asset
                     </Button>
                 </div>
@@ -263,10 +259,10 @@ export default function Investments() {
                         const isTxnLoading = txnLoading[item.id];
 
                         return (
-                            <Card key={item.id} className="bg-card border-border overflow-hidden hover:border-muted-foreground/30 transition-colors">
+                            <Card key={item.id} className="bg-surface-container-low border-outline-variant/30 overflow-hidden hover:border-muted-foreground/30 transition-colors">
                                 <CardHeader className="pb-3 flex flex-row items-start justify-between">
                                     <div className="space-y-1">
-                                        <CardTitle className="text-xl text-card-foreground font-bold tracking-tight flex items-center gap-2">
+                                        <CardTitle className="text-xl text-card-foreground font-medium tracking-tight flex items-center gap-2">
                                             {item.ticker}
                                             {item.sip_enabled ? (
                                                 <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-primary/20 text-primary uppercase tracking-wider">SIP</span>
@@ -277,8 +273,8 @@ export default function Investments() {
                                         </CardDescription>
                                     </div>
                                     <div className="text-right">
-                                        <div className="text-lg font-bold text-card-foreground">{fmt(value)}</div>
-                                        <div className={`text-sm font-medium flex items-center justify-end gap-1 ${isPositive ? 'text-emerald-600' : 'text-rose-600'}`}>
+                                        <div className="text-lg font-medium text-card-foreground">{fmt(value)}</div>
+                                        <div className={`text-sm font-medium flex items-center justify-end gap-1 ${isPositive ? 'text-success' : 'text-destructive'}`}>
                                             {isPositive ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
                                             {Math.abs(gainPct).toFixed(2)}%
                                             {item.xirr !== null && item.xirr !== undefined && (
@@ -290,7 +286,7 @@ export default function Investments() {
                                     </div>
                                 </CardHeader>
                                 <CardContent>
-                                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm py-4 border-t border-border">
+                                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm py-4 border-t border-outline-variant/30">
                                         <div>
                                             <div className="text-muted-foreground mb-1">Quantity</div>
                                             <div className="text-foreground/80 font-medium">{qty.toLocaleString(undefined, { maximumFractionDigits: 8 })}</div>
@@ -305,7 +301,7 @@ export default function Investments() {
                                         </div>
                                         <div>
                                             <div className="text-muted-foreground mb-1">P&L</div>
-                                            <div className={`font-medium font-mono ${isPositive ? 'text-emerald-600' : 'text-rose-600'}`}>
+                                            <div className={`font-medium font-mono ${isPositive ? 'text-success' : 'text-destructive'}`}>
                                                 {isPositive ? '+' : ''}{fmt(gain)}
                                             </div>
                                         </div>
@@ -313,28 +309,28 @@ export default function Investments() {
 
                                     {/* SIP Info */}
                                     {item.sip_enabled && (
-                                        <div className="flex items-center gap-2 text-xs text-muted-foreground py-2 border-t border-border">
+                                        <div className="flex items-center gap-2 text-xs text-muted-foreground py-2 border-t border-outline-variant/30">
                                             <CalendarPlus className="w-3.5 h-3.5 text-primary" />
                                             <span>SIP: <span className="text-foreground/80 font-medium">{fmt(item.sip_amount)}</span> {item.sip_frequency} on day {item.sip_day}</span>
                                         </div>
                                     )}
 
-                                    <div className="flex bg-muted/50 rounded-2xl p-1 mt-2 gap-1">
-                                        <Button variant="ghost" size="sm" onClick={() => openAddTxn(item)} className="flex-1 text-muted-foreground hover:text-foreground hover:bg-secondary text-xs h-8">
+                                    <div className="flex bg-surface-container/50 rounded-2xl p-1 mt-2 gap-1">
+                                        <Button variant="ghost" size="sm" onClick={() => openAddTxn(item)} className="flex-1 text-muted-foreground hover:text-foreground hover:bg-surface-container-high text-xs h-8">
                                             <Plus className="w-3 h-3 mr-1" /> Record Purchase
                                         </Button>
-                                        <Button variant="ghost" size="sm" onClick={() => toggleExpand(item.id)} className="flex-1 text-muted-foreground hover:text-foreground hover:bg-secondary text-xs h-8">
+                                        <Button variant="ghost" size="sm" onClick={() => toggleExpand(item.id)} className="flex-1 text-muted-foreground hover:text-foreground hover:bg-surface-container-high text-xs h-8">
                                             <BarChart3 className="w-3 h-3 mr-1" /> History {item.transaction_count > 0 && `(${item.transaction_count})`}
                                             {isExpanded ? <ChevronUp className="w-3 h-3 ml-1" /> : <ChevronDown className="w-3 h-3 ml-1" />}
                                         </Button>
-                                        <Button variant="ghost" size="sm" onClick={() => openEdit(item)} className="flex-1 text-muted-foreground hover:text-foreground hover:bg-secondary text-xs h-8">
+                                        <Button variant="ghost" size="sm" onClick={() => openEdit(item)} className="flex-1 text-muted-foreground hover:text-foreground hover:bg-surface-container-high text-xs h-8">
                                             <Edit2 className="w-3 h-3 mr-1" /> Edit
                                         </Button>
                                     </div>
 
                                     {/* Transaction History */}
                                     {isExpanded && (
-                                        <div className="mt-3 border-t border-border pt-3">
+                                        <div className="mt-3 border-t border-outline-variant/30 pt-3">
                                             <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-2">Transaction History</h4>
                                             {isTxnLoading ? (
                                                 <div className="text-xs text-muted-foreground py-4 text-center">Loading...</div>
@@ -345,9 +341,9 @@ export default function Investments() {
                                             ) : (
                                                 <div className="space-y-1 max-h-[240px] overflow-y-auto">
                                                     {txns.map(t => (
-                                                        <div key={t.id} className="flex items-center justify-between text-xs py-2 px-3 rounded-xl hover:bg-muted/30 group transition-colors">
+                                                        <div key={t.id} className="flex items-center justify-between text-xs py-2 px-3 rounded-xl hover:bg-surface-container/50 group transition-colors">
                                                             <div className="flex items-center gap-3">
-                                                                <span className={`font-semibold uppercase px-1.5 py-0.5 rounded text-[10px] ${t.type === 'sell' ? 'bg-rose-500/10 text-rose-500' : t.type === 'sip' ? 'bg-primary/10 text-primary' : 'bg-emerald-500/10 text-emerald-500'}`}>
+                                                                <span className={`font-semibold uppercase px-1.5 py-0.5 rounded text-[10px] ${t.type === 'sell' ? 'bg-destructive/10 text-destructive' : t.type === 'sip' ? 'bg-primary/10 text-primary' : 'bg-success/10 text-success'}`}>
                                                                     {t.type}
                                                                 </span>
                                                                 <span className="text-muted-foreground">{new Date(t.date).toLocaleDateString()}</span>
@@ -361,7 +357,7 @@ export default function Investments() {
                                                                 </span>
                                                                 <Button
                                                                     variant="ghost" size="sm"
-                                                                    className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-rose-500 transition-opacity"
+                                                                    className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive transition-opacity"
                                                                     onClick={() => handleDeleteTxn(item.id, t.id)}
                                                                 >
                                                                     <Trash2 className="w-3 h-3" />
@@ -382,7 +378,7 @@ export default function Investments() {
 
             {/* Add/Edit Asset Dialog */}
             <Dialog open={openAdd} onOpenChange={setOpenAdd}>
-                <DialogContent className="bg-card border-border text-card-foreground sm:max-w-md">
+                <DialogContent className="bg-surface-container-low border-outline-variant/30 text-card-foreground sm:max-w-md">
                     <DialogHeader>
                         <DialogTitle>{editItem ? 'Edit Asset' : 'Add New Asset'}</DialogTitle>
                     </DialogHeader>
@@ -391,7 +387,7 @@ export default function Investments() {
                             <div className="space-y-2">
                                 <Label>Ticker / Symbol</Label>
                                 <Input
-                                    className="bg-background border-border uppercase"
+                                    className="bg-surface-container border-outline-variant/30 uppercase"
                                     placeholder="AAPL"
                                     value={formData.ticker}
                                     onChange={e => setFormData({ ...formData, ticker: e.target.value })}
@@ -401,10 +397,10 @@ export default function Investments() {
                             <div className="space-y-2">
                                 <Label>Asset Class</Label>
                                 <Select value={formData.asset_class} onValueChange={(val) => setFormData({ ...formData, asset_class: val })}>
-                                    <SelectTrigger className="bg-background border-border">
+                                    <SelectTrigger className="bg-surface-container border-outline-variant/30">
                                         <SelectValue />
                                     </SelectTrigger>
-                                    <SelectContent className="bg-card border-border text-foreground/80">
+                                    <SelectContent className="bg-surface-container-low border-outline-variant/30 text-foreground/80">
                                         <SelectItem value="Stock">Stock</SelectItem>
                                         <SelectItem value="Crypto">Crypto</SelectItem>
                                         <SelectItem value="ETF">ETF</SelectItem>
@@ -420,7 +416,7 @@ export default function Investments() {
                         <div className="space-y-2">
                             <Label>Asset Name</Label>
                             <Input
-                                className="bg-background border-border"
+                                className="bg-surface-container border-outline-variant/30"
                                 placeholder="Apple Inc."
                                 value={formData.name}
                                 onChange={e => setFormData({ ...formData, name: e.target.value })}
@@ -433,7 +429,7 @@ export default function Investments() {
                                 <Label>Quantity</Label>
                                 <Input
                                     type="number" step="any" min="0"
-                                    className="bg-background border-border"
+                                    className="bg-surface-container border-outline-variant/30"
                                     value={formData.quantity}
                                     onChange={e => setFormData({ ...formData, quantity: e.target.value })}
                                     required
@@ -443,7 +439,7 @@ export default function Investments() {
                                 <Label>Avg Cost</Label>
                                 <Input
                                     type="number" step="any" min="0"
-                                    className="bg-background border-border"
+                                    className="bg-surface-container border-outline-variant/30"
                                     value={formData.average_price}
                                     onChange={e => setFormData({ ...formData, average_price: e.target.value })}
                                     required
@@ -453,7 +449,7 @@ export default function Investments() {
                                 <Label>Current Price</Label>
                                 <Input
                                     type="number" step="any" min="0"
-                                    className="bg-background border-border"
+                                    className="bg-surface-container border-outline-variant/30"
                                     value={formData.current_price}
                                     onChange={e => setFormData({ ...formData, current_price: e.target.value })}
                                     required
@@ -462,17 +458,17 @@ export default function Investments() {
                         </div>
 
                         {/* SIP Configuration */}
-                        <div className="bg-muted/50 p-4 rounded-3xl border border-border space-y-3">
+                        <div className="bg-surface-container/50 p-4 rounded-xl border border-outline-variant/30 space-y-3">
                             <div className="flex items-center justify-between">
                                 <div>
                                     <Label className="text-sm font-medium">SIP (Systematic Investment)</Label>
                                     <p className="text-[11px] text-muted-foreground mt-0.5">Track recurring investments in this asset</p>
                                 </div>
                                 <Select value={formData.sip_enabled ? 'true' : 'false'} onValueChange={(val) => setFormData({ ...formData, sip_enabled: val === 'true' })}>
-                                    <SelectTrigger className="bg-card border-border w-[90px] h-8 text-xs">
+                                    <SelectTrigger className="bg-surface-container-low border-outline-variant/30 w-[90px] h-8 text-xs">
                                         <SelectValue />
                                     </SelectTrigger>
-                                    <SelectContent className="bg-card border-border text-foreground/80">
+                                    <SelectContent className="bg-surface-container-low border-outline-variant/30 text-foreground/80">
                                         <SelectItem value="true">Yes</SelectItem>
                                         <SelectItem value="false">No</SelectItem>
                                     </SelectContent>
@@ -484,7 +480,7 @@ export default function Investments() {
                                         <Label className="text-xs">Amount</Label>
                                         <Input
                                             type="number" step="0.01" min="0"
-                                            className="bg-card border-border h-8 text-sm"
+                                            className="bg-surface-container-low border-outline-variant/30 h-8 text-sm"
                                             value={formData.sip_amount}
                                             onChange={e => setFormData({ ...formData, sip_amount: e.target.value })}
                                             placeholder="5000"
@@ -493,10 +489,10 @@ export default function Investments() {
                                     <div className="space-y-1">
                                         <Label className="text-xs">Frequency</Label>
                                         <Select value={formData.sip_frequency} onValueChange={(val) => setFormData({ ...formData, sip_frequency: val })}>
-                                            <SelectTrigger className="bg-card border-border h-8 text-xs">
+                                            <SelectTrigger className="bg-surface-container-low border-outline-variant/30 h-8 text-xs">
                                                 <SelectValue />
                                             </SelectTrigger>
-                                            <SelectContent className="bg-card border-border text-foreground/80">
+                                            <SelectContent className="bg-surface-container-low border-outline-variant/30 text-foreground/80">
                                                 <SelectItem value="weekly">Weekly</SelectItem>
                                                 <SelectItem value="biweekly">Bi-weekly</SelectItem>
                                                 <SelectItem value="monthly">Monthly</SelectItem>
@@ -507,7 +503,7 @@ export default function Investments() {
                                         <Label className="text-xs">Day of Month</Label>
                                         <Input
                                             type="number" min="1" max="28"
-                                            className="bg-card border-border h-8 text-sm"
+                                            className="bg-surface-container-low border-outline-variant/30 h-8 text-sm"
                                             value={formData.sip_day}
                                             onChange={e => setFormData({ ...formData, sip_day: e.target.value })}
                                         />
@@ -516,7 +512,7 @@ export default function Investments() {
                             )}
                         </div>
 
-                        <DialogFooter className="pt-4 border-t border-border flex justify-between w-full">
+                        <DialogFooter className="pt-4 border-t border-outline-variant/30 flex justify-between w-full">
                             {editItem ? (
                                 <div className="flex justify-between w-full">
                                     <Button type="button" variant="destructive" onClick={() => { handleDelete(editItem.id); setOpenAdd(false); }}>
@@ -524,13 +520,13 @@ export default function Investments() {
                                     </Button>
                                     <div className="flex gap-2">
                                         <Button type="button" variant="ghost" className="text-muted-foreground hover:text-foreground" onClick={() => setOpenAdd(false)}>Cancel</Button>
-                                        <Button type="submit" className="bg-emerald-600 hover:bg-emerald-700 text-white">Save Changes</Button>
+                                        <Button type="submit" className="bg-success hover:bg-success/90 text-success-foreground">Save Changes</Button>
                                     </div>
                                 </div>
                             ) : (
                                 <>
                                     <Button type="button" variant="ghost" className="text-muted-foreground hover:text-foreground" onClick={() => setOpenAdd(false)}>Cancel</Button>
-                                    <Button type="submit" className="bg-emerald-600 hover:bg-emerald-700 text-white">Add Asset</Button>
+                                    <Button type="submit" className="bg-success hover:bg-success/90 text-success-foreground">Add Asset</Button>
                                 </>
                             )}
                         </DialogFooter>
@@ -540,7 +536,7 @@ export default function Investments() {
 
             {/* Record Transaction Dialog */}
             <Dialog open={openTxn} onOpenChange={setOpenTxn}>
-                <DialogContent className="bg-card border-border text-card-foreground sm:max-w-sm">
+                <DialogContent className="bg-surface-container-low border-outline-variant/30 text-card-foreground sm:max-w-sm">
                     <DialogHeader>
                         <DialogTitle className="flex items-center gap-2">
                             Record Transaction
@@ -552,10 +548,10 @@ export default function Investments() {
                             <div className="space-y-2">
                                 <Label>Type</Label>
                                 <Select value={txnForm.type} onValueChange={(val) => setTxnForm({ ...txnForm, type: val })}>
-                                    <SelectTrigger className="bg-background border-border">
+                                    <SelectTrigger className="bg-surface-container border-outline-variant/30">
                                         <SelectValue />
                                     </SelectTrigger>
-                                    <SelectContent className="bg-card border-border text-foreground/80">
+                                    <SelectContent className="bg-surface-container-low border-outline-variant/30 text-foreground/80">
                                         <SelectItem value="buy">Buy</SelectItem>
                                         <SelectItem value="sell">Sell</SelectItem>
                                         <SelectItem value="sip">SIP</SelectItem>
@@ -566,7 +562,7 @@ export default function Investments() {
                                 <Label>Date</Label>
                                 <Input
                                     type="date" required
-                                    className="bg-background border-border"
+                                    className="bg-surface-container border-outline-variant/30"
                                     value={txnForm.date}
                                     onChange={e => setTxnForm({ ...txnForm, date: e.target.value })}
                                 />
@@ -577,7 +573,7 @@ export default function Investments() {
                                 <Label>Quantity</Label>
                                 <Input
                                     type="number" step="any" min="0" required
-                                    className="bg-background border-border"
+                                    className="bg-surface-container border-outline-variant/30"
                                     value={txnForm.quantity}
                                     onChange={e => setTxnForm({ ...txnForm, quantity: e.target.value })}
                                     placeholder="10"
@@ -587,7 +583,7 @@ export default function Investments() {
                                 <Label>Price per Unit</Label>
                                 <Input
                                     type="number" step="any" min="0" required
-                                    className="bg-background border-border"
+                                    className="bg-surface-container border-outline-variant/30"
                                     value={txnForm.price}
                                     onChange={e => setTxnForm({ ...txnForm, price: e.target.value })}
                                     placeholder="150.00"
@@ -597,13 +593,13 @@ export default function Investments() {
                         <div className="space-y-2">
                             <Label>Notes <span className="text-muted-foreground font-normal">(Optional)</span></Label>
                             <Input
-                                className="bg-background border-border"
+                                className="bg-surface-container border-outline-variant/30"
                                 value={txnForm.notes}
                                 onChange={e => setTxnForm({ ...txnForm, notes: e.target.value })}
                                 placeholder="Monthly SIP, Dip buy..."
                             />
                         </div>
-                        <div className="bg-muted/50 rounded-xl p-3 text-sm">
+                        <div className="bg-surface-container/50 rounded-xl p-3 text-sm">
                             <div className="flex justify-between text-muted-foreground">
                                 <span>Total Amount</span>
                                 <span className="font-semibold text-foreground/80 font-mono">
@@ -611,9 +607,9 @@ export default function Investments() {
                                 </span>
                             </div>
                         </div>
-                        <DialogFooter className="pt-4 border-t border-border">
+                        <DialogFooter className="pt-4 border-t border-outline-variant/30">
                             <Button type="button" variant="ghost" className="text-muted-foreground hover:text-foreground" onClick={() => setOpenTxn(false)}>Cancel</Button>
-                            <Button type="submit" className={`text-white ${txnForm.type === 'sell' ? 'bg-rose-600 hover:bg-rose-700' : 'bg-emerald-600 hover:bg-emerald-700'}`}>
+                            <Button type="submit" className={`${txnForm.type === 'sell' ? 'bg-destructive hover:bg-destructive/90 text-destructive-foreground' : 'bg-success hover:bg-success/90 text-success-foreground'}`}>
                                 {txnForm.type === 'sell' ? 'Record Sale' : 'Record Purchase'}
                             </Button>
                         </DialogFooter>

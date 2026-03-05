@@ -119,13 +119,13 @@ export default function Rules() {
     return (
         <div className="space-y-6 max-w-5xl mx-auto">
             <div>
-                <h1 className="text-3xl font-bold tracking-tight text-foreground">Import Rules</h1>
+                <h1 className="text-3xl font-medium tracking-tight text-foreground">Import Rules</h1>
                 <p className="text-muted-foreground mt-2">
                     Automate categorization and payee renaming during CSV imports.
                 </p>
             </div>
 
-            <Card className="bg-card border-border shadow-sm">
+            <Card className="bg-surface-container-low border-outline-variant/30 shadow-sm">
                 <CardHeader>
                     <CardTitle>{isEditing ? 'Edit Rule' : 'Create New Rule'}</CardTitle>
                     <CardDescription>Rules run automatically when uploading a CSV file.</CardDescription>
@@ -196,7 +196,7 @@ export default function Rules() {
                                     <input
                                         type="checkbox"
                                         id="set_cleared"
-                                        className="h-4 w-4 rounded border-border text-primary focus:ring-primary"
+                                        className="h-4 w-4 rounded border-outline-variant/30 text-primary focus:ring-primary"
                                         checked={form.set_cleared}
                                         onChange={e => setForm({ ...form, set_cleared: e.target.checked })}
                                     />
@@ -226,7 +226,7 @@ export default function Rules() {
                             </div>
                         </div>
 
-                        <div className="flex justify-end gap-3 pt-4 border-t border-border">
+                        <div className="flex justify-end gap-3 pt-4 border-t border-outline-variant/30">
                             {isEditing && (
                                 <Button type="button" variant="outline" onClick={resetForm}>
                                     <X className="w-4 h-4 mr-2" /> Cancel
@@ -241,9 +241,9 @@ export default function Rules() {
                 </CardContent>
             </Card>
 
-            <Card className="bg-card border-border shadow-sm overflow-hidden">
+            <Card className="bg-surface-container-low border-outline-variant/30 shadow-sm overflow-hidden">
                 <Table>
-                    <TableHeader className="bg-muted/50">
+                    <TableHeader className="bg-surface-container/50">
                         <TableRow>
                             <TableHead className="w-[80px]">Priority</TableHead>
                             <TableHead>Condition</TableHead>
@@ -277,7 +277,7 @@ export default function Rules() {
                                         <Button variant="ghost" size="icon" onClick={() => handleEdit(rule)}>
                                             <Edit className="h-4 w-4" />
                                         </Button>
-                                        <Button variant="ghost" size="icon" className="text-rose-500 hover:text-rose-600 hover:bg-rose-50" onClick={() => handleDelete(rule.id)}>
+                                        <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive hover:bg-destructive/10" onClick={() => handleDelete(rule.id)}>
                                             <Trash2 className="h-4 w-4" />
                                         </Button>
                                     </div>

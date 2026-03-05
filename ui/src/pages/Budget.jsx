@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import { ChevronLeft, ChevronRight, Plus, Copy, ArrowLeftRight, Layers, Settings, Trash2 } from 'lucide-react';
-import { getBudget, getBudgetSummary, assignBudget, createCategoryGroup, createCategory, updateCategory, deleteCategory, deleteCategoryGroup, copyBudget, moveMoney, getSettings, updateSettings } from '../api/client.js';
+import { ChevronLeft, ChevronRight, Plus, Copy, ArrowLeftRight, Layers, Settings, Trash2, CreditCard, Banknote, Zap } from 'lucide-react';
+import { getBudget, getBudgetSummary, assignBudget, createCategoryGroup, createCategory, updateCategory, deleteCategory, deleteCategoryGroup, copyBudget, moveMoney, getSettings, updateSettings, getFundingTemplates, applyFundingTemplate } from '../api/client.js';
 import { useSettings } from '../hooks/useSettings.jsx';
 import { Card, CardContent } from '../components/ui/card';
 import { Button } from '../components/ui/button';
@@ -27,6 +27,10 @@ export default function Budget() {
     const [showTemplateModal, setShowTemplateModal] = useState(false);
     const [replaceSettings, setReplaceSettings] = useState(false);
     const [customTemplates, setCustomTemplates] = useState([]);
+    const [fundingTemplates, setFundingTemplates] = useState([]);
+    const [showFundingModal, setShowFundingModal] = useState(false);
+    const [fundingAmount, setFundingAmount] = useState('');
+    const [selectedFundingTemplate, setSelectedFundingTemplate] = useState('');
 
     const fetchCustomTemplates = useCallback(async () => {
         try {
@@ -46,6 +50,30 @@ export default function Budget() {
             fetchCustomTemplates();
         }
     }, [showTemplateModal, fetchCustomTemplates]);
+
+    useEffect(() => {
+        if (showFundingModal) {
+            getFundingTemplates().then(setFundingTemplates).catch(() => setFundingTemplates([]));
+        }
+    }, [showFundingModal]);
+
+    const handleApplyFunding = async () => {
+        if (!selectedFundingTemplate || !fundingAmount) return;
+        try {
+            const result = await applyFundingTemplate(parseInt(selectedFundingTemplate), {
+                month,
+                income_amount: parseFloat(fundingAmount)
+            });
+            setShowFundingModal(false);
+            setFundingAmount('');
+            setSelectedFundingTemplate('');
+            setToast(`Funded ${result.applied} categories from paycheck!`);
+            setTimeout(() => setToast(null), 3000);
+            loadData();
+        } catch (e) {
+            alert(e.message);
+        }
+    };
 
     const BUDGET_TEMPLATES = [
         {
@@ -241,47 +269,50 @@ export default function Budget() {
         <div className="space-y-6">
             {toast && (
                 <div className="fixed top-4 right-4 z-50 animate-in slide-in-from-top-2 fade-in duration-300">
-                    <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 px-4 py-3 rounded-2xl shadow-lg flex items-center gap-2">
+                    <div className="bg-success/10 border border-success/20 text-success px-4 py-3 rounded-2xl shadow-lg flex items-center gap-2">
                         <span className="text-sm font-medium">✓ {toast}</span>
                     </div>
                 </div>
             )}
 
             {/* Budget Header */}
-            <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6 bg-card border border-border rounded-3xl p-4 md:p-6 shadow-sm">
+            <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6 bg-surface-container-low border border-outline-variant/30 rounded-xl p-4 md:p-6 shadow-sm">
 
                 <div className="flex items-center gap-4 w-full xl:w-auto justify-center xl:justify-start">
-                    <Button variant="outline" size="icon" className="h-10 w-10 rounded-full bg-muted border-border text-muted-foreground hover:bg-secondary/80 hover:text-foreground" onClick={() => changeMonth(-1)}>
+                    <Button variant="outline" size="icon" className="h-10 w-10 rounded-full bg-muted border-outline-variant/30 text-muted-foreground hover:bg-surface-container-high hover:text-foreground" onClick={() => changeMonth(-1)}>
                         <ChevronLeft className="h-5 w-5" />
                     </Button>
-                    <h2 className="text-2xl font-bold tracking-tight text-card-foreground min-w-[200px] text-center">{monthLabel}</h2>
-                    <Button variant="outline" size="icon" className="h-10 w-10 rounded-full bg-muted border-border text-muted-foreground hover:bg-secondary/80 hover:text-foreground" onClick={() => changeMonth(1)}>
+                    <h2 className="text-2xl font-medium tracking-tight text-card-foreground min-w-[200px] text-center">{monthLabel}</h2>
+                    <Button variant="outline" size="icon" className="h-10 w-10 rounded-full bg-muted border-outline-variant/30 text-muted-foreground hover:bg-surface-container-high hover:text-foreground" onClick={() => changeMonth(1)}>
                         <ChevronRight className="h-5 w-5" />
                     </Button>
                 </div>
 
                 <div className="flex flex-col sm:flex-row items-center gap-4 w-full xl:w-auto">
-                    <div className={`flex flex-col items-center sm:items-start px-6 py-3 rounded-2xl w-full sm:w-auto ${isUnassignedPositive ? 'bg-emerald-500/10 border border-emerald-500/20' : isUnassignedNegative ? 'bg-rose-500/10 border border-rose-500/20' : 'bg-muted border border-border'}`}>
+                    <div className={`flex flex-col items-center sm:items-start px-6 py-3 rounded-2xl w-full sm:w-auto ${isUnassignedPositive ? 'bg-success/10 border border-success/20' : isUnassignedNegative ? 'bg-destructive/10 border border-destructive/20' : 'bg-muted border border-outline-variant/30'}`}>
                         <span className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-1">To Be Budgeted</span>
-                        <span className={`text-2xl font-bold font-mono tracking-tight ${isUnassignedPositive ? 'text-emerald-600' : isUnassignedNegative ? 'text-rose-600' : 'text-foreground/80'}`}>
+                        <span className={`text-2xl font-medium font-mono tracking-tight ${isUnassignedPositive ? 'text-success' : isUnassignedNegative ? 'text-destructive' : 'text-foreground/80'}`}>
                             {fmt(unassigned)}
                         </span>
                     </div>
 
                     <div className="flex flex-wrap items-center justify-center gap-2 w-full sm:w-auto">
-                        <Button variant="outline" className="bg-card border-border text-muted-foreground hover:bg-secondary hover:text-foreground" onClick={handleCopyLastMonth} title="Copy allocations from previous month">
+                        <Button variant="outline" className="bg-surface-container-low border-outline-variant/30 text-muted-foreground hover:bg-surface-container-high hover:text-foreground" onClick={handleCopyLastMonth} title="Copy allocations from previous month">
                             <Copy className="mr-2 h-4 w-4" /> Copy Previous
                         </Button>
-                        <Button variant="outline" className="bg-card border-border text-muted-foreground hover:bg-secondary hover:text-foreground" onClick={() => setShowTemplateModal(true)}>
+                        <Button variant="outline" className="bg-surface-container-low border-outline-variant/30 text-muted-foreground hover:bg-surface-container-high hover:text-foreground" onClick={() => setShowFundingModal(true)} title="Apply paycheck funding template">
+                            <Banknote className="mr-2 h-4 w-4" /> Paycheck
+                        </Button>
+                        <Button variant="outline" className="bg-surface-container-low border-outline-variant/30 text-muted-foreground hover:bg-surface-container-high hover:text-foreground" onClick={() => setShowTemplateModal(true)}>
                             <Layers className="mr-2 h-4 w-4" /> Templates
                         </Button>
-                        <Button variant="outline" className="bg-card border-border text-muted-foreground hover:bg-secondary hover:text-foreground" onClick={() => setShowMoveModal(true)}>
+                        <Button variant="outline" className="bg-surface-container-low border-outline-variant/30 text-muted-foreground hover:bg-surface-container-high hover:text-foreground" onClick={() => setShowMoveModal(true)}>
                             <ArrowLeftRight className="mr-2 h-4 w-4" /> Move
                         </Button>
-                        <Button variant="outline" className="bg-card border-border text-muted-foreground hover:bg-secondary hover:text-foreground" onClick={() => setShowGroupModal(true)}>
+                        <Button variant="outline" className="bg-surface-container-low border-outline-variant/30 text-muted-foreground hover:bg-surface-container-high hover:text-foreground" onClick={() => setShowGroupModal(true)}>
                             <Plus className="mr-1 h-4 w-4" /> Group
                         </Button>
-                        <Button className="bg-primary text-primary-foreground shadow-md shadow-cyan-900/20 hover:bg-primary/90" onClick={() => setShowCatModal(true)}>
+                        <Button className="bg-primary text-primary-foreground shadow-sm hover:bg-primary/90" onClick={() => setShowCatModal(true)}>
                             <Plus className="mr-1 h-4 w-4" /> Category
                         </Button>
                     </div>
@@ -290,22 +321,22 @@ export default function Budget() {
 
             {/* Summary bar */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <Card className="bg-muted/50 border-border">
+                <Card className="bg-surface-container/50 border-outline-variant/30">
                     <CardContent className="p-4 flex flex-col">
                         <span className="text-sm font-medium text-muted-foreground mb-1">Income Expected</span>
-                        <span className="text-xl font-bold text-emerald-600 font-mono">{fmt(summary?.month_income)}</span>
+                        <span className="text-xl font-medium text-success font-mono">{fmt(summary?.month_income)}</span>
                     </CardContent>
                 </Card>
-                <Card className="bg-muted/50 border-border">
+                <Card className="bg-surface-container/50 border-outline-variant/30">
                     <CardContent className="p-4 flex flex-col">
                         <span className="text-sm font-medium text-muted-foreground mb-1">Assigned Needed</span>
-                        <span className="text-xl font-bold text-card-foreground font-mono">{fmt(summary?.month_assigned)}</span>
+                        <span className="text-xl font-medium text-card-foreground font-mono">{fmt(summary?.month_assigned)}</span>
                     </CardContent>
                 </Card>
-                <Card className="bg-muted/50 border-border">
+                <Card className="bg-surface-container/50 border-outline-variant/30">
                     <CardContent className="p-4 flex flex-col">
                         <span className="text-sm font-medium text-muted-foreground mb-1">Spent So Far</span>
-                        <span className="text-xl font-bold text-rose-600 font-mono">{fmt(summary?.month_expenses)}</span>
+                        <span className="text-xl font-medium text-destructive font-mono">{fmt(summary?.month_expenses)}</span>
                     </CardContent>
                 </Card>
             </div>
@@ -313,16 +344,16 @@ export default function Budget() {
             {/* Budget Grid */}
             <div className="space-y-6">
                 {groups.map(group => (
-                    <div key={group.id} className="bg-card border border-border rounded-3xl overflow-hidden shadow-sm">
+                    <div key={group.id} className="bg-surface-container-low border border-outline-variant/30 rounded-xl overflow-hidden shadow-sm">
 
                         {/* Group Header */}
-                        <div className="flex items-center justify-between px-4 py-3 bg-muted/50 border-b border-border group/header">
+                        <div className="flex items-center justify-between px-4 py-3 bg-surface-container/50 border-b border-outline-variant/30 group/header">
                             <div className="flex items-center gap-2 w-1/3 min-w-[200px]">
                                 <h3 className="font-semibold text-foreground/80 text-lg">{group.name}</h3>
                                 <Button
                                     variant="ghost"
                                     size="icon"
-                                    className="h-6 w-6 text-muted-foreground hover:text-rose-600 hover:bg-rose-500/10 opacity-0 group-hover/header:opacity-100 transition-opacity"
+                                    className="h-6 w-6 text-muted-foreground hover:text-destructive hover:bg-destructive/10 opacity-0 group-hover/header:opacity-100 transition-opacity"
                                     onClick={async (e) => {
                                         e.stopPropagation();
                                         if (!window.confirm(`Delete group "${group.name}" and all its categories?`)) return;
@@ -358,7 +389,7 @@ export default function Budget() {
                                 const isAvailableZero = available === 0;
 
                                 return (
-                                    <div key={cat.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between pl-4 pr-4 sm:pr-16 py-3 hover:bg-muted/30 transition-colors group relative">
+                                    <div key={cat.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between pl-4 pr-4 sm:pr-16 py-3 hover:bg-surface-container/50 transition-colors group relative">
 
                                         {/* Category Info */}
                                         <div
@@ -376,9 +407,16 @@ export default function Budget() {
                                             }}
                                         >
                                             <div className="flex flex-col">
-                                                <span className="font-medium text-muted-foreground group-hover:text-foreground transition-colors">
-                                                    {cat.name}
-                                                </span>
+                                                <div className="flex items-center gap-1.5">
+                                                    <span className="font-medium text-muted-foreground group-hover:text-foreground transition-colors">
+                                                        {cat.name}
+                                                    </span>
+                                                    {cat.is_cc_payment && (
+                                                        <span className="inline-flex items-center gap-0.5 rounded-full bg-tertiary/10 px-1.5 py-0.5 text-[10px] font-semibold text-tertiary" title="Auto-funded from CC spending">
+                                                            <CreditCard className="h-2.5 w-2.5" /> CC
+                                                        </span>
+                                                    )}
+                                                </div>
                                                 {cat.rollover_strategy && cat.rollover_strategy !== 'none' && (
                                                     <span className="text-[10px] text-primary/70 uppercase">
                                                         {cat.rollover_strategy === 'rollover' ? '🔄 Rollover' : '🧹 Sweep'}
@@ -388,7 +426,7 @@ export default function Budget() {
                                             {cat.goal_amount !== null && cat.goal_amount !== undefined && (
                                                 <div className="flex-shrink-0 w-16 h-1.5 bg-muted rounded-full overflow-hidden" title={`Goal Progress: ${Math.round(goalProgress || 0)}%`}>
                                                     <div
-                                                        className={`h-full rounded-full ${goalProgress >= 100 ? 'bg-emerald-500' : goalProgress < 0 ? 'bg-rose-500' : 'bg-primary'}`}
+                                                        className={`h-full rounded-full ${goalProgress >= 100 ? 'bg-success' : goalProgress < 0 ? 'bg-destructive' : 'bg-primary'}`}
                                                     />
                                                 </div>
                                             )}
@@ -403,7 +441,7 @@ export default function Budget() {
                                                 <div className="relative">
                                                     <Input
                                                         type="number"
-                                                        className="h-8 w-full border-transparent bg-muted/50 text-right font-mono text-sm text-foreground/80 shadow-none transition-all hover:border-muted-foreground/30 focus:border-primary focus:bg-card focus-visible:ring-1 focus-visible:ring-primary md:h-9 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]"
+                                                        className="h-8 w-full border-transparent bg-surface-container/50 text-right font-mono text-sm text-foreground/80 shadow-none transition-all hover:border-muted-foreground/30 focus:border-primary focus:bg-surface-container-low focus-visible:ring-1 focus-visible:ring-primary md:h-9 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]"
                                                         defaultValue={cat.assigned || 0}
                                                         onBlur={(e) => handleAssign(cat.id, e.target.value)}
                                                         onKeyDown={(e) => e.key === 'Enter' && e.target.blur()}
@@ -413,7 +451,7 @@ export default function Budget() {
 
                                             <div className="flex flex-col sm:contents w-1/3 min-w-[90px] md:min-w-[100px] text-right">
                                                 <span className="text-[10px] text-muted-foreground uppercase sm:hidden mb-1">Activity</span>
-                                                <span className={`font-mono text-sm py-1.5 md:py-2 px-3 ${parseFloat(cat.activity) < 0 ? 'text-rose-600/80' : 'text-muted-foreground'}`}>
+                                                <span className={`font-mono text-sm py-1.5 md:py-2 px-3 ${parseFloat(cat.activity) < 0 ? 'text-destructive/80' : 'text-muted-foreground'}`}>
                                                     {fmt(cat.activity)}
                                                 </span>
                                             </div>
@@ -421,9 +459,9 @@ export default function Budget() {
                                             <div className="flex flex-col sm:contents w-1/3 min-w-[90px] md:min-w-[100px] text-right">
                                                 <span className="text-[10px] text-muted-foreground uppercase sm:hidden mb-1">Available</span>
                                                 <div className="flex justify-end w-full">
-                                                    <span className={`inline-flex items-center justify-end px-3 py-1.5 md:py-2 rounded-xl font-mono text-sm font-bold min-w-[80px] w-full sm:w-auto ${isAvailablePositive ? 'bg-emerald-500/10 text-emerald-600' :
-                                                        isAvailableNegative ? 'bg-rose-500/10 text-rose-600' :
-                                                            'bg-muted/50 text-muted-foreground font-medium'
+                                                    <span className={`inline-flex items-center justify-end px-3 py-1.5 md:py-2 rounded-xl font-mono text-sm font-medium min-w-[80px] w-full sm:w-auto ${isAvailablePositive ? 'bg-success/10 text-success' :
+                                                        isAvailableNegative ? 'bg-destructive/10 text-destructive' :
+                                                            'bg-surface-container/50 text-muted-foreground font-medium'
                                                         }`}>
                                                         {fmt(available)}
                                                     </span>
@@ -434,7 +472,7 @@ export default function Budget() {
 
                                         {/* Quick Actions (Hover) */}
                                         <div className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity hidden sm:flex items-center gap-1">
-                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-secondary" onClick={(e) => {
+                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-surface-container-high" onClick={(e) => {
                                                 e.stopPropagation();
                                                 setEditCat({
                                                     ...cat,
@@ -448,7 +486,7 @@ export default function Budget() {
                                             }} title="Edit Category">
                                                 <Settings className="h-4 w-4" />
                                             </Button>
-                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-rose-600 hover:bg-rose-500/10" onClick={async (e) => {
+                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10" onClick={async (e) => {
                                                 e.stopPropagation();
                                                 e.preventDefault();
                                                 if (!window.confirm('Delete this category? Transactions linked to it may become uncategorized.')) return;
@@ -482,7 +520,7 @@ export default function Budget() {
             </div>
 
             {groups.length === 0 && (
-                <div className="flex flex-col items-center justify-center py-24 text-center border-2 border-dashed border-border rounded-3xl bg-muted/50 mt-4">
+                <div className="flex flex-col items-center justify-center py-24 text-center border-2 border-dashed border-outline-variant/30 rounded-xl bg-surface-container/50 mt-4">
                     <p className="text-lg font-medium text-muted-foreground mb-2">No budget categories yet</p>
                     <p className="text-muted-foreground mb-6 max-w-sm">Create a group and add categories to start organizing your money, or load a default template.</p>
                     <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -505,7 +543,7 @@ export default function Budget() {
                                     setLoading(false);
                                 }
                             }}
-                            className="bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                            className="bg-secondary text-secondary-foreground hover:bg-surface-container-high"
                         >
                             <Layers className="mr-2 h-4 w-4" /> Load Default Groups
                         </Button>
@@ -518,7 +556,7 @@ export default function Budget() {
 
             {/* Add Group Modal */}
             <Dialog open={showGroupModal} onOpenChange={setShowGroupModal}>
-                <DialogContent className="sm:max-w-[425px] bg-background border-border text-foreground/80">
+                <DialogContent className="sm:max-w-[425px] bg-surface-container border-outline-variant/30 text-foreground/80">
                     <DialogHeader>
                         <DialogTitle className="text-xl font-semibold mb-2 text-card-foreground">Add Category Group</DialogTitle>
                         <DialogDescription className="text-muted-foreground">
@@ -530,7 +568,7 @@ export default function Budget() {
                             <Label htmlFor="groupName" className="text-muted-foreground text-xs uppercase tracking-wider">Group Name</Label>
                             <Input
                                 id="groupName"
-                                className="bg-card border-border text-card-foreground placeholder:text-muted-foreground focus-visible:ring-primary"
+                                className="bg-surface-container-low border-outline-variant/30 text-card-foreground placeholder:text-muted-foreground focus-visible:ring-primary"
                                 value={newGroupName}
                                 onChange={e => setNewGroupName(e.target.value)}
                                 placeholder="e.g., Fixed Expenses, Living, Savings"
@@ -538,8 +576,8 @@ export default function Budget() {
                                 required
                             />
                         </div>
-                        <DialogFooter className="pt-4 border-t border-border">
-                            <Button type="button" variant="ghost" className="text-muted-foreground hover:text-foreground hover:bg-secondary" onClick={() => setShowGroupModal(false)}>
+                        <DialogFooter className="pt-4 border-t border-outline-variant/30">
+                            <Button type="button" variant="ghost" className="text-muted-foreground hover:text-foreground hover:bg-surface-container-high" onClick={() => setShowGroupModal(false)}>
                                 Cancel
                             </Button>
                             <Button type="submit" className="bg-primary text-primary-foreground hover:bg-primary/90">
@@ -552,7 +590,7 @@ export default function Budget() {
 
             {/* Add Category Modal */}
             <Dialog open={showCatModal} onOpenChange={setShowCatModal}>
-                <DialogContent className="sm:max-w-[425px] bg-background border-border text-foreground/80">
+                <DialogContent className="sm:max-w-[425px] bg-surface-container border-outline-variant/30 text-foreground/80">
                     <DialogHeader>
                         <DialogTitle className="text-xl font-semibold mb-2 text-card-foreground">Add Category</DialogTitle>
                         <DialogDescription className="text-muted-foreground">
@@ -564,7 +602,7 @@ export default function Budget() {
                             <Label htmlFor="catGroupId" className="text-muted-foreground text-xs uppercase tracking-wider">Group</Label>
                             <select
                                 id="catGroupId"
-                                className="flex h-10 w-full rounded-xl border border-border bg-card px-3 py-2 text-sm text-card-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                                className="flex h-10 w-full rounded-xl border border-outline-variant/30 bg-surface-container-low px-3 py-2 text-sm text-card-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                                 value={newCat.group_id}
                                 onChange={e => setNewCat({ ...newCat, group_id: e.target.value })}
                                 required
@@ -577,7 +615,7 @@ export default function Budget() {
                             <Label htmlFor="catName" className="text-muted-foreground text-xs uppercase tracking-wider">Category Name</Label>
                             <Input
                                 id="catName"
-                                className="bg-card border-border text-card-foreground placeholder:text-muted-foreground focus-visible:ring-primary"
+                                className="bg-surface-container-low border-outline-variant/30 text-card-foreground placeholder:text-muted-foreground focus-visible:ring-primary"
                                 value={newCat.name}
                                 onChange={e => setNewCat({ ...newCat, name: e.target.value })}
                                 placeholder="e.g., Groceries, Rent, Auto Maintenance"
@@ -590,7 +628,7 @@ export default function Budget() {
                                 <Label htmlFor="goalType" className="text-muted-foreground text-xs uppercase tracking-wider">Goal Type <span className="text-muted-foreground normal-case font-normal">(Optional)</span></Label>
                                 <select
                                     id="goalType"
-                                    className="flex h-10 w-full rounded-xl border border-border bg-card px-3 py-2 text-sm text-card-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                                    className="flex h-10 w-full rounded-xl border border-outline-variant/30 bg-surface-container-low px-3 py-2 text-sm text-card-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                                     value={newCat.goal_type}
                                     onChange={e => setNewCat({ ...newCat, goal_type: e.target.value })}
                                 >
@@ -606,7 +644,7 @@ export default function Budget() {
                                     id="goalAmount"
                                     type="number"
                                     step="0.01"
-                                    className="bg-card border-border text-card-foreground placeholder:text-muted-foreground focus-visible:ring-primary font-mono [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]"
+                                    className="bg-surface-container-low border-outline-variant/30 text-card-foreground placeholder:text-muted-foreground focus-visible:ring-primary font-mono [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]"
                                     value={newCat.goal_amount}
                                     onChange={e => setNewCat({ ...newCat, goal_amount: e.target.value })}
                                     placeholder="0.00"
@@ -615,8 +653,8 @@ export default function Budget() {
                             </div>
                         </div>
 
-                        <DialogFooter className="pt-4 border-t border-border">
-                            <Button type="button" variant="ghost" className="text-muted-foreground hover:text-foreground hover:bg-secondary" onClick={() => setShowCatModal(false)}>
+                        <DialogFooter className="pt-4 border-t border-outline-variant/30">
+                            <Button type="button" variant="ghost" className="text-muted-foreground hover:text-foreground hover:bg-surface-container-high" onClick={() => setShowCatModal(false)}>
                                 Cancel
                             </Button>
                             <Button type="submit" className="bg-primary text-primary-foreground hover:bg-primary/90">
@@ -629,7 +667,7 @@ export default function Budget() {
 
             {/* Edit Category Modal */}
             <Dialog open={showEditCatModal} onOpenChange={setShowEditCatModal}>
-                <DialogContent className="sm:max-w-[425px] bg-background border-border text-foreground/80">
+                <DialogContent className="sm:max-w-[425px] bg-surface-container border-outline-variant/30 text-foreground/80">
                     <DialogHeader>
                         <DialogTitle className="text-xl font-semibold mb-2 text-card-foreground">Edit Category</DialogTitle>
                         <DialogDescription className="text-muted-foreground">
@@ -642,7 +680,7 @@ export default function Budget() {
                                 <Label htmlFor="editCatName" className="text-muted-foreground text-xs uppercase tracking-wider">Category Name</Label>
                                 <Input
                                     id="editCatName"
-                                    className="bg-card border-border text-card-foreground placeholder:text-muted-foreground focus-visible:ring-primary"
+                                    className="bg-surface-container-low border-outline-variant/30 text-card-foreground placeholder:text-muted-foreground focus-visible:ring-primary"
                                     value={editCat.name}
                                     onChange={e => setEditCat({ ...editCat, name: e.target.value })}
                                     required
@@ -654,7 +692,7 @@ export default function Budget() {
                                     <Label htmlFor="editGoalType" className="text-muted-foreground text-xs uppercase tracking-wider">Goal Type</Label>
                                     <select
                                         id="editGoalType"
-                                        className="flex h-10 w-full rounded-xl border border-border bg-card px-3 py-2 text-sm text-card-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                                        className="flex h-10 w-full rounded-xl border border-outline-variant/30 bg-surface-container-low px-3 py-2 text-sm text-card-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                                         value={editCat.goal_type || ''}
                                         onChange={e => setEditCat({ ...editCat, goal_type: e.target.value })}
                                     >
@@ -670,7 +708,7 @@ export default function Budget() {
                                         id="editGoalAmount"
                                         type="number"
                                         step="0.01"
-                                        className="bg-card border-border text-card-foreground placeholder:text-muted-foreground focus-visible:ring-primary font-mono [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]"
+                                        className="bg-surface-container-low border-outline-variant/30 text-card-foreground placeholder:text-muted-foreground focus-visible:ring-primary font-mono [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]"
                                         value={editCat.goal_amount}
                                         onChange={e => setEditCat({ ...editCat, goal_amount: e.target.value })}
                                         disabled={!editCat.goal_type}
@@ -682,7 +720,7 @@ export default function Budget() {
                                 <Label htmlFor="editRolloverStrategy" className="text-muted-foreground text-xs uppercase tracking-wider">Rollover Strategy</Label>
                                 <select
                                     id="editRolloverStrategy"
-                                    className="flex h-10 w-full rounded-xl border border-border bg-card px-3 py-2 text-sm text-card-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                                    className="flex h-10 w-full rounded-xl border border-outline-variant/30 bg-surface-container-low px-3 py-2 text-sm text-card-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                                     value={editCat.rollover_strategy || 'none'}
                                     onChange={e => setEditCat({ ...editCat, rollover_strategy: e.target.value })}
                                 >
@@ -696,7 +734,7 @@ export default function Budget() {
                                     <Label htmlFor="editSweepTarget" className="text-muted-foreground text-xs uppercase tracking-wider">Sweep Target Category</Label>
                                     <select
                                         id="editSweepTarget"
-                                        className="flex h-10 w-full rounded-xl border border-border bg-card px-3 py-2 text-sm text-card-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                                        className="flex h-10 w-full rounded-xl border border-outline-variant/30 bg-surface-container-low px-3 py-2 text-sm text-card-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                                         value={editCat.sweep_target_id || ''}
                                         onChange={e => setEditCat({ ...editCat, sweep_target_id: e.target.value })}
                                         required={editCat.rollover_strategy === 'sweep'}
@@ -709,12 +747,12 @@ export default function Budget() {
                                 </div>
                             )}
 
-                            <DialogFooter className="pt-4 border-t border-border flex flex-col sm:flex-row justify-between gap-4 sm:gap-2">
-                                <Button type="button" variant="outline" className="text-rose-600 border-rose-200 hover:bg-rose-50 hover:border-rose-300 w-full sm:w-auto" onClick={handleDeleteCategory}>
+                            <DialogFooter className="pt-4 border-t border-outline-variant/30 flex flex-col sm:flex-row justify-between gap-4 sm:gap-2">
+                                <Button type="button" variant="outline" className="text-destructive border-destructive/30 hover:bg-destructive/10 hover:border-destructive/50 w-full sm:w-auto" onClick={handleDeleteCategory}>
                                     Delete
                                 </Button>
                                 <div className="flex gap-2 w-full sm:w-auto mt-4 sm:mt-0 justify-end">
-                                    <Button type="button" variant="ghost" className="text-muted-foreground hover:text-foreground hover:bg-secondary flex-1 sm:flex-none" onClick={() => setShowEditCatModal(false)}>
+                                    <Button type="button" variant="ghost" className="text-muted-foreground hover:text-foreground hover:bg-surface-container-high flex-1 sm:flex-none" onClick={() => setShowEditCatModal(false)}>
                                         Cancel
                                     </Button>
                                     <Button type="submit" className="bg-primary text-primary-foreground hover:bg-primary/90 flex-1 sm:flex-none">
@@ -729,7 +767,7 @@ export default function Budget() {
 
             {/* Move Money Modal */}
             <Dialog open={showMoveModal} onOpenChange={setShowMoveModal}>
-                <DialogContent className="sm:max-w-[425px] bg-background border-border text-foreground/80">
+                <DialogContent className="sm:max-w-[425px] bg-surface-container border-outline-variant/30 text-foreground/80">
                     <DialogHeader>
                         <DialogTitle className="text-xl font-semibold mb-2 text-card-foreground">Move Money</DialogTitle>
                         <DialogDescription className="text-muted-foreground">
@@ -741,7 +779,7 @@ export default function Budget() {
                             <Label htmlFor="moveFrom" className="text-muted-foreground text-xs uppercase tracking-wider">From Category</Label>
                             <select
                                 id="moveFrom"
-                                className="flex h-10 w-full rounded-xl border border-border bg-card px-3 py-2 text-sm text-card-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                                className="flex h-10 w-full rounded-xl border border-outline-variant/30 bg-surface-container-low px-3 py-2 text-sm text-card-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                                 value={moveData.from}
                                 onChange={e => setMoveData({ ...moveData, from: e.target.value })}
                                 required
@@ -754,7 +792,7 @@ export default function Budget() {
                         </div>
 
                         <div className="flex justify-center -my-2 relative z-10">
-                            <div className="bg-card border border-border rounded-full p-1.5 text-muted-foreground">
+                            <div className="bg-surface-container-low border border-outline-variant/30 rounded-full p-1.5 text-muted-foreground">
                                 <ArrowLeftRight className="h-4 w-4" />
                             </div>
                         </div>
@@ -763,7 +801,7 @@ export default function Budget() {
                             <Label htmlFor="moveTo" className="text-muted-foreground text-xs uppercase tracking-wider">To Category</Label>
                             <select
                                 id="moveTo"
-                                className="flex h-10 w-full rounded-xl border border-border bg-card px-3 py-2 text-sm text-card-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                                className="flex h-10 w-full rounded-xl border border-outline-variant/30 bg-surface-container-low px-3 py-2 text-sm text-card-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                                 value={moveData.to}
                                 onChange={e => setMoveData({ ...moveData, to: e.target.value })}
                                 required
@@ -785,7 +823,7 @@ export default function Budget() {
                                     id="moveAmount"
                                     type="number"
                                     step="0.01"
-                                    className="bg-card border-border text-card-foreground placeholder:text-muted-foreground focus-visible:ring-primary font-mono text-lg pl-8 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]"
+                                    className="bg-surface-container-low border-outline-variant/30 text-card-foreground placeholder:text-muted-foreground focus-visible:ring-primary font-mono text-lg pl-8 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]"
                                     value={moveData.amount}
                                     onChange={e => setMoveData({ ...moveData, amount: e.target.value })}
                                     placeholder="0.00"
@@ -794,8 +832,8 @@ export default function Budget() {
                             </div>
                         </div>
 
-                        <DialogFooter className="pt-4 border-t border-border">
-                            <Button type="button" variant="ghost" className="text-muted-foreground hover:text-foreground hover:bg-secondary" onClick={() => setShowMoveModal(false)}>
+                        <DialogFooter className="pt-4 border-t border-outline-variant/30">
+                            <Button type="button" variant="ghost" className="text-muted-foreground hover:text-foreground hover:bg-surface-container-high" onClick={() => setShowMoveModal(false)}>
                                 Cancel
                             </Button>
                             <Button type="submit" className="bg-primary text-primary-foreground hover:bg-primary/90">
@@ -808,7 +846,7 @@ export default function Budget() {
 
             {/* Template Dialog */}
             <Dialog open={showTemplateModal} onOpenChange={setShowTemplateModal}>
-                <DialogContent className="bg-card border-border text-card-foreground sm:max-w-lg">
+                <DialogContent className="bg-surface-container-low border-outline-variant/30 text-card-foreground sm:max-w-lg">
                     <DialogHeader>
                         <DialogTitle className="text-lg">Budget Templates</DialogTitle>
                         <DialogDescription className="text-muted-foreground text-sm">Choose a template to quickly set up budget categories.</DialogDescription>
@@ -835,7 +873,7 @@ export default function Budget() {
                                     loadData();
                                 } catch (e) { alert(e.message); setLoading(false); }
                             }}
-                                className="group w-full rounded-2xl border border-border p-4 text-left transition-all hover:border-primary/50 hover:bg-primary/5">
+                                className="group w-full rounded-2xl border border-outline-variant/30 p-4 text-left transition-all hover:border-primary/50 hover:bg-primary/5">
                                 <div className="flex items-center gap-3 mb-1">
                                     <span className="text-xl">{tpl.icon}</span>
                                     <span className="font-semibold text-card-foreground transition-colors group-hover:text-primary">{tpl.name}</span>
@@ -851,11 +889,11 @@ export default function Budget() {
 
                         {customTemplates.length > 0 && (
                             <>
-                                <div className="mt-6 mb-2 border-b border-border pb-2 px-1">
+                                <div className="mt-6 mb-2 border-b border-outline-variant/30 pb-2 px-1">
                                     <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Your Custom Templates</h4>
                                 </div>
                                 {customTemplates.map((tpl, i) => (
-                                    <div key={`custom-${i}`} className="group relative flex w-full rounded-2xl border border-border p-4 transition-all hover:border-primary/50 hover:bg-primary/5">
+                                    <div key={`custom-${i}`} className="group relative flex w-full rounded-2xl border border-outline-variant/30 p-4 transition-all hover:border-primary/50 hover:bg-primary/5">
                                         <button onClick={async () => {
                                             try {
                                                 setLoading(true);
@@ -888,7 +926,7 @@ export default function Budget() {
                                             </div>
                                         </button>
                                         <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-rose-600 hover:bg-rose-500/10" onClick={async (e) => {
+                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10" onClick={async (e) => {
                                                 e.stopPropagation();
                                                 if (!window.confirm(`Delete custom template "${tpl.name}"?`)) return;
                                                 const newTpls = customTemplates.filter((_, idx) => idx !== i);
@@ -909,12 +947,12 @@ export default function Budget() {
                             </>
                         )}
 
-                        <div className="mt-6 pt-4 border-t border-border space-y-4">
+                        <div className="mt-6 pt-4 border-t border-outline-variant/30 space-y-4">
                             <div className="flex items-center space-x-2">
                                 <input
                                     type="checkbox"
                                     id="replaceCategories"
-                                    className="h-4 w-4 rounded border-border bg-card text-primary focus:ring-primary focus:ring-offset-background"
+                                    className="h-4 w-4 rounded border-outline-variant/30 bg-surface-container-low text-primary focus:ring-primary focus:ring-offset-background"
                                     checked={replaceSettings}
                                     onChange={e => setReplaceSettings(e.target.checked)}
                                 />
@@ -927,7 +965,7 @@ export default function Budget() {
                             </div>
 
                             <div className="pt-2">
-                                <Button variant="outline" className="w-full bg-card border-border text-foreground hover:bg-secondary" onClick={async () => {
+                                <Button variant="outline" className="w-full bg-surface-container-low border-outline-variant/30 text-foreground hover:bg-surface-container-high" onClick={async () => {
                                     const name = window.prompt("Enter a name for this custom template:");
                                     if (!name) return;
                                     const desc = window.prompt("Enter a short description (optional):") || 'Custom budget template';
@@ -961,6 +999,61 @@ export default function Budget() {
                         </div>
 
                     </div>
+                </DialogContent>
+            </Dialog>
+
+            {/* Paycheck Funding Modal */}
+            <Dialog open={showFundingModal} onOpenChange={setShowFundingModal}>
+                <DialogContent className="sm:max-w-[425px] bg-surface-container border-outline-variant/30 text-foreground/80">
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2 text-lg text-card-foreground">
+                            <Banknote className="h-5 w-5 text-primary" /> Apply Paycheck Funding
+                        </DialogTitle>
+                        <DialogDescription className="text-muted-foreground">
+                            Select a funding template and enter your paycheck amount to auto-distribute across budget categories.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 pt-2">
+                        <div className="space-y-2">
+                            <Label className="text-muted-foreground text-xs uppercase tracking-wider">Funding Template</Label>
+                            <Select value={selectedFundingTemplate} onValueChange={setSelectedFundingTemplate}>
+                                <SelectTrigger className="bg-surface-container-low border-outline-variant/30 text-card-foreground">
+                                    <SelectValue placeholder="Select a template..." />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {fundingTemplates.map(t => (
+                                        <SelectItem key={t.id} value={t.id.toString()}>{t.name}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            {fundingTemplates.length === 0 && (
+                                <p className="text-xs text-muted-foreground">No funding templates found. Create one in Settings.</p>
+                            )}
+                        </div>
+                        <div className="space-y-2">
+                            <Label className="text-muted-foreground text-xs uppercase tracking-wider">Paycheck Amount</Label>
+                            <Input
+                                type="number"
+                                step="0.01"
+                                className="bg-surface-container-low border-outline-variant/30 text-card-foreground placeholder:text-muted-foreground focus-visible:ring-primary"
+                                value={fundingAmount}
+                                onChange={e => setFundingAmount(e.target.value)}
+                                placeholder="e.g., 3000.00"
+                            />
+                        </div>
+                    </div>
+                    <DialogFooter className="pt-4 border-t border-outline-variant/30">
+                        <Button type="button" variant="ghost" className="text-muted-foreground hover:text-foreground hover:bg-surface-container-high" onClick={() => setShowFundingModal(false)}>
+                            Cancel
+                        </Button>
+                        <Button
+                            className="bg-primary text-primary-foreground hover:bg-primary/90"
+                            disabled={!selectedFundingTemplate || !fundingAmount}
+                            onClick={handleApplyFunding}
+                        >
+                            <Zap className="mr-2 h-4 w-4" /> Apply Funding
+                        </Button>
+                    </DialogFooter>
                 </DialogContent>
             </Dialog>
         </div>

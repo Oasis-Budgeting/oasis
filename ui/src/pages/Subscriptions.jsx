@@ -143,14 +143,14 @@ export default function Subscriptions() {
                         <RefreshCw className="h-6 w-6" />
                     </div>
                     <div>
-                        <h2 className="text-2xl font-bold tracking-tight text-card-foreground">Subscriptions & Recurring</h2>
+                        <h2 className="text-2xl font-medium tracking-tight text-card-foreground">Subscriptions & Recurring</h2>
                         <p className="text-muted-foreground">Automate your regular expenses and income.</p>
                     </div>
                 </div>
                 <div className="flex gap-3">
                     <Button
                         variant="secondary"
-                        className="bg-muted text-card-foreground hover:bg-secondary/80"
+                        className="bg-muted text-card-foreground hover:bg-surface-container-high"
                         onClick={handleProcess}
                         disabled={processing}
                     >
@@ -164,28 +164,24 @@ export default function Subscriptions() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <Card className="h-full min-h-[136px] bg-card border-border shadow-sm">
+                <Card className="h-full min-h-[136px] bg-surface-container-low border-outline-variant/30 shadow-sm">
                     <CardHeader className="pb-2">
-                        <CardDescription className="text-muted-foreground font-medium tracking-wide text-xs uppercase">Active Subscriptions</CardDescription>
-                        <CardTitle className="text-3xl font-bold tracking-tight text-card-foreground">
+                        <CardDescription className="text-muted-foreground font-medium text-xs">Active Subscriptions</CardDescription>
+                        <CardTitle className="text-3xl font-medium tracking-tight text-card-foreground">
                             {items.filter(i => i.is_subscription && i.status === 'active').length}
                         </CardTitle>
                     </CardHeader>
                 </Card>
-                <Card className="h-full min-h-[136px] bg-card border-border shadow-sm">
+                <Card className="h-full min-h-[136px] bg-surface-container-low border-outline-variant/30 shadow-sm">
                     <CardHeader className="pb-2">
-                        <CardDescription className="text-muted-foreground font-medium tracking-wide text-xs uppercase">Total Recurring Items</CardDescription>
-                        <CardTitle className="text-3xl font-bold tracking-tight text-card-foreground">{items.filter(i => i.status === 'active').length}</CardTitle>
+                        <CardDescription className="text-muted-foreground font-medium text-xs">Total Recurring Items</CardDescription>
+                        <CardTitle className="text-3xl font-medium tracking-tight text-card-foreground">{items.filter(i => i.status === 'active').length}</CardTitle>
                     </CardHeader>
                 </Card>
-                <Card className="h-full min-h-[136px] relative overflow-hidden border-none bg-gradient-to-br from-primary/90 via-primary/80 to-accent/90 text-primary-foreground shadow-lg shadow-cyan-900/20">
-                    <div className="absolute inset-0 bg-white/5 opacity-50 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-white/20 via-white/5 to-transparent mix-blend-overlay"></div>
-                    <div className="absolute -top-6 -right-6 p-4 opacity-10 pointer-events-none transform rotate-12">
-                        <span className="text-[128px] font-bold leading-none select-none">{settings.currency_symbol || '$'}</span>
-                    </div>
+                <Card className="h-full min-h-[136px] relative overflow-hidden border-none bg-primary text-primary-foreground shadow-sm">
                     <CardHeader className="pb-2 relative z-10">
-                        <CardDescription className="text-primary-foreground/80 font-medium tracking-wide text-xs uppercase">Monthly Expense Est.</CardDescription>
-                        <CardTitle className="text-4xl font-bold text-primary-foreground tracking-tight drop-shadow-sm">{fmt(-monthlyTotal)}</CardTitle>
+                        <CardDescription className="text-primary-foreground/80 font-medium text-xs">Monthly Expense Est.</CardDescription>
+                        <CardTitle className="text-4xl font-medium text-primary-foreground tracking-tight">{fmt(-monthlyTotal)}</CardTitle>
                     </CardHeader>
                 </Card>
             </div>
@@ -193,7 +189,7 @@ export default function Subscriptions() {
             {loading ? (
                 <div className="text-center py-20 text-muted-foreground">Loading recurring transactions...</div>
             ) : items.length === 0 ? (
-                <div className="text-center py-20 bg-muted/50 rounded-3xl border border-dashed border-border">
+                <div className="text-center py-20 bg-surface-container/50 rounded-xl border border-dashed border-outline-variant/30">
                     <RefreshCw className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                     <h3 className="text-lg font-medium text-muted-foreground">No recurring transactions</h3>
                     <p className="text-muted-foreground mt-1 max-w-sm mx-auto">Set up your subscriptions, bills, and paychecks to automate your budget.</p>
@@ -209,9 +205,9 @@ export default function Subscriptions() {
                         const isDue = new Date(item.next_date) <= new Date();
 
                         return (
-                            <Card key={item.id} className={`bg-card border-border overflow-hidden relative ${item.status === 'paused' ? 'opacity-60' : ''}`}>
+                            <Card key={item.id} className={`bg-surface-container-low border-outline-variant/30 overflow-hidden relative ${item.status === 'paused' ? 'opacity-60' : ''}`}>
                                 {isDue && item.status === 'active' && (
-                                    <div className="absolute top-0 right-0 left-0 h-1 bg-rose-500" />
+                                    <div className="absolute top-0 right-0 left-0 h-1 bg-destructive" />
                                 )}
                                 <CardHeader className="pb-3 flex flex-row items-start justify-between">
                                     <div className="space-y-1">
@@ -223,31 +219,31 @@ export default function Subscriptions() {
                                             {item.category_name || item.account_name}
                                         </CardDescription>
                                     </div>
-                                    <div className={`text-lg font-bold ${isIncome ? 'text-emerald-600' : 'text-foreground/80'}`}>
+                                    <div className={`text-lg font-medium ${isIncome ? 'text-success' : 'text-foreground/80'}`}>
                                         {fmt(isIncome ? item.amount : -item.amount)}
                                     </div>
                                 </CardHeader>
                                 <CardContent>
-                                    <div className="flex items-center justify-between text-sm py-2 border-t border-border">
+                                    <div className="flex items-center justify-between text-sm py-2 border-t border-outline-variant/30">
                                         <div className="flex items-center gap-2 text-muted-foreground">
                                             <Calendar className="w-4 h-4" />
                                             <span className="capitalize">{item.frequency}</span>
                                         </div>
-                                        <div className={`flex items-center gap-2 font-medium ${isDue && item.status === 'active' ? 'text-rose-600' : 'text-muted-foreground'}`}>
+                                        <div className={`flex items-center gap-2 font-medium ${isDue && item.status === 'active' ? 'text-destructive' : 'text-muted-foreground'}`}>
                                             <Clock className="w-4 h-4" />
                                             {new Date(item.next_date).toLocaleDateString()}
                                             {isDue && item.status === 'active' && ' (Due)'}
                                         </div>
                                     </div>
-                                    <div className="flex bg-muted/50 rounded-2xl p-1 mt-4 gap-1">
+                                    <div className="flex bg-surface-container/50 rounded-2xl p-1 mt-4 gap-1">
                                         {item.subscription_url && (
-                                            <Button variant="ghost" size="sm" asChild className="flex-1 text-muted-foreground hover:text-foreground hover:bg-secondary text-xs h-8">
+                                            <Button variant="ghost" size="sm" asChild className="flex-1 text-muted-foreground hover:text-foreground hover:bg-surface-container-high text-xs h-8">
                                                 <a href={item.subscription_url} target="_blank" rel="noopener noreferrer">
                                                     <ExternalLink className="w-3 h-3 justify-center" />
                                                 </a>
                                             </Button>
                                         )}
-                                        <Button variant="ghost" size="sm" onClick={() => openEdit(item)} className="flex-1 text-muted-foreground hover:text-foreground hover:bg-secondary text-xs h-8">
+                                        <Button variant="ghost" size="sm" onClick={() => openEdit(item)} className="flex-1 text-muted-foreground hover:text-foreground hover:bg-surface-container-high text-xs h-8">
                                             <Edit2 className="w-3 h-3 mr-2" /> Edit
                                         </Button>
                                     </div>
@@ -259,7 +255,7 @@ export default function Subscriptions() {
             )}
 
             <Dialog open={openAdd} onOpenChange={setOpenAdd}>
-                <DialogContent className="bg-card border-border text-card-foreground sm:max-w-xl">
+                <DialogContent className="bg-surface-container-low border-outline-variant/30 text-card-foreground sm:max-w-xl">
                     <DialogHeader>
                         <DialogTitle>{editItem ? 'Edit Recurring Item' : 'Add Recurring Item'}</DialogTitle>
                     </DialogHeader>
@@ -268,10 +264,10 @@ export default function Subscriptions() {
                             <div className="space-y-2">
                                 <Label>Type</Label>
                                 <Select value={formData.type} onValueChange={(val) => setFormData({ ...formData, type: val })}>
-                                    <SelectTrigger className="bg-background border-border">
+                                    <SelectTrigger className="bg-surface-container border-outline-variant/30">
                                         <SelectValue />
                                     </SelectTrigger>
-                                    <SelectContent className="bg-card border-border text-foreground/80">
+                                    <SelectContent className="bg-surface-container-low border-outline-variant/30 text-foreground/80">
                                         <SelectItem value="expense">Expense</SelectItem>
                                         <SelectItem value="income">Income</SelectItem>
                                         <SelectItem value="transfer">Transfer</SelectItem>
@@ -281,10 +277,10 @@ export default function Subscriptions() {
                             <div className="space-y-2">
                                 <Label>Frequency</Label>
                                 <Select value={formData.frequency} onValueChange={(val) => setFormData({ ...formData, frequency: val })}>
-                                    <SelectTrigger className="bg-background border-border">
+                                    <SelectTrigger className="bg-surface-container border-outline-variant/30">
                                         <SelectValue />
                                     </SelectTrigger>
-                                    <SelectContent className="bg-card border-border text-foreground/80">
+                                    <SelectContent className="bg-surface-container-low border-outline-variant/30 text-foreground/80">
                                         <SelectItem value="daily">Daily</SelectItem>
                                         <SelectItem value="weekly">Weekly</SelectItem>
                                         <SelectItem value="biweekly">Bi-weekly</SelectItem>
@@ -299,7 +295,7 @@ export default function Subscriptions() {
                             <div className="space-y-2 col-span-2 sm:col-span-1">
                                 <Label>Payee</Label>
                                 <Input
-                                    className="bg-background border-border"
+                                    className="bg-surface-container border-outline-variant/30"
                                     value={formData.payee}
                                     onChange={e => setFormData({ ...formData, payee: e.target.value })}
                                     required={formData.type !== 'transfer'}
@@ -309,7 +305,7 @@ export default function Subscriptions() {
                                 <Label>Amount</Label>
                                 <Input
                                     type="number" step="0.01" min="0" required
-                                    className="bg-background border-border"
+                                    className="bg-surface-container border-outline-variant/30"
                                     value={formData.amount}
                                     onChange={e => setFormData({ ...formData, amount: e.target.value })}
                                 />
@@ -320,10 +316,10 @@ export default function Subscriptions() {
                             <div className="space-y-2">
                                 <Label>Account</Label>
                                 <Select required value={formData.account_id} onValueChange={(val) => setFormData({ ...formData, account_id: val })}>
-                                    <SelectTrigger className="bg-background border-border">
+                                    <SelectTrigger className="bg-surface-container border-outline-variant/30">
                                         <SelectValue placeholder="Select account" />
                                     </SelectTrigger>
-                                    <SelectContent className="bg-card border-border text-foreground/80">
+                                    <SelectContent className="bg-surface-container-low border-outline-variant/30 text-foreground/80">
                                         {accounts.map(a => <SelectItem key={a.id} value={String(a.id)}>{a.name}</SelectItem>)}
                                     </SelectContent>
                                 </Select>
@@ -332,15 +328,15 @@ export default function Subscriptions() {
                                 <Label>{formData.type === 'transfer' ? 'Transfer To' : 'Category'}</Label>
                                 {formData.type === 'transfer' ? (
                                     <Select required value={formData.transfer_account_id} onValueChange={(val) => setFormData({ ...formData, transfer_account_id: val })}>
-                                        <SelectTrigger className="bg-background border-border"><SelectValue placeholder="Dest info" /></SelectTrigger>
-                                        <SelectContent className="bg-card border-border text-foreground/80">
+                                        <SelectTrigger className="bg-surface-container border-outline-variant/30"><SelectValue placeholder="Dest info" /></SelectTrigger>
+                                        <SelectContent className="bg-surface-container-low border-outline-variant/30 text-foreground/80">
                                             {accounts.filter(a => String(a.id) !== formData.account_id).map(a => <SelectItem key={a.id} value={String(a.id)}>{a.name}</SelectItem>)}
                                         </SelectContent>
                                     </Select>
                                 ) : (
                                     <Select value={formData.category_id} onValueChange={(val) => setFormData({ ...formData, category_id: val })}>
-                                        <SelectTrigger className="bg-background border-border"><SelectValue placeholder="Select Category" /></SelectTrigger>
-                                        <SelectContent className="bg-card border-border text-foreground/80">
+                                        <SelectTrigger className="bg-surface-container border-outline-variant/30"><SelectValue placeholder="Select Category" /></SelectTrigger>
+                                        <SelectContent className="bg-surface-container-low border-outline-variant/30 text-foreground/80">
                                             <SelectItem value="none">-- No Category --</SelectItem>
                                             {categories.map(c => <SelectItem key={c.id} value={String(c.id)}>{c.name}</SelectItem>)}
                                         </SelectContent>
@@ -357,7 +353,7 @@ export default function Subscriptions() {
                                 </div>
                                 <Input
                                     type="date" required
-                                    className="bg-background border-border pl-10"
+                                    className="bg-surface-container border-outline-variant/30 pl-10"
                                     value={formData.next_date}
                                     onChange={e => setFormData({ ...formData, next_date: e.target.value })}
                                 />
@@ -365,10 +361,10 @@ export default function Subscriptions() {
                             <div className="space-y-2">
                                 <Label>Status</Label>
                                 <Select value={formData.status} onValueChange={(val) => setFormData({ ...formData, status: val })}>
-                                    <SelectTrigger className="bg-background border-border">
+                                    <SelectTrigger className="bg-surface-container border-outline-variant/30">
                                         <SelectValue />
                                     </SelectTrigger>
-                                    <SelectContent className="bg-card border-border text-foreground/80">
+                                    <SelectContent className="bg-surface-container-low border-outline-variant/30 text-foreground/80">
                                         <SelectItem value="active">Active</SelectItem>
                                         <SelectItem value="paused">Paused</SelectItem>
                                     </SelectContent>
@@ -376,14 +372,14 @@ export default function Subscriptions() {
                             </div>
                         </div>
 
-                        <div className="bg-muted/50 p-4 rounded-3xl border border-border space-y-4">
+                        <div className="bg-surface-container/50 p-4 rounded-xl border border-outline-variant/30 space-y-4">
                             <div className="flex items-center justify-between">
                                 <Label>Is this a Subscription?</Label>
                                 <Select value={formData.is_subscription} onValueChange={(val) => setFormData({ ...formData, is_subscription: val })}>
-                                    <SelectTrigger className="bg-card border-border w-[120px]">
+                                    <SelectTrigger className="bg-surface-container-low border-outline-variant/30 w-[120px]">
                                         <SelectValue />
                                     </SelectTrigger>
-                                    <SelectContent className="bg-card border-border text-foreground/80">
+                                    <SelectContent className="bg-surface-container-low border-outline-variant/30 text-foreground/80">
                                         <SelectItem value="true">Yes</SelectItem>
                                         <SelectItem value="false">No</SelectItem>
                                     </SelectContent>
@@ -396,7 +392,7 @@ export default function Subscriptions() {
                                         <Link2 className="absolute top-2.5 left-3 w-4 h-4 text-muted-foreground" />
                                         <Input
                                             placeholder="https://netflix.com"
-                                            className="bg-card border-border pl-10"
+                                            className="bg-surface-container-low border-outline-variant/30 pl-10"
                                             value={formData.subscription_url}
                                             onChange={e => setFormData({ ...formData, subscription_url: e.target.value })}
                                         />
@@ -408,13 +404,13 @@ export default function Subscriptions() {
                         <div className="space-y-2">
                             <Label>Memo (Optional)</Label>
                             <Input
-                                className="bg-background border-border"
+                                className="bg-surface-container border-outline-variant/30"
                                 value={formData.memo}
                                 onChange={e => setFormData({ ...formData, memo: e.target.value })}
                             />
                         </div>
 
-                        <DialogFooter className="pt-4 border-t border-border flex justify-between w-full">
+                        <DialogFooter className="pt-4 border-t border-outline-variant/30 flex justify-between w-full">
                             {editItem ? (
                                 <div className="flex justify-between w-full">
                                     <Button type="button" variant="destructive" onClick={() => { handleDelete(editItem.id); setOpenAdd(false); }}>
