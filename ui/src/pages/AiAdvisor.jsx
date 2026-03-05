@@ -126,22 +126,22 @@ export default function AiAdvisor() {
                 <div className="flex items-center gap-3">
                     <div className="p-2 bg-primary/10 rounded-2xl text-primary"><Bot className="h-6 w-6" /></div>
                     <div>
-                        <h2 className="text-2xl font-bold tracking-tight text-card-foreground">Finny AI</h2>
+                        <h2 className="text-2xl font-medium tracking-tight text-card-foreground">Finny AI</h2>
                         <p className="text-muted-foreground text-sm">Get personalized financial advice from Finny, your local LLM advisor.</p>
                     </div>
                 </div>
                 <div className="flex gap-2">
-                    <Button variant="outline" size="sm" className="border-border text-muted-foreground hover:text-foreground" onClick={() => setShowExport(true)}>
+                    <Button variant="outline" size="sm" className="border-outline-variant/30 text-muted-foreground hover:text-foreground" onClick={() => setShowExport(true)}>
                         <Download className="w-4 h-4 mr-2" /> Export for LLM
                     </Button>
-                    <Button variant="outline" size="sm" className="border-border text-muted-foreground hover:text-foreground" onClick={() => { setShowSettings(true); loadModels(); }}>
+                    <Button variant="outline" size="sm" className="border-outline-variant/30 text-muted-foreground hover:text-foreground" onClick={() => { setShowSettings(true); loadModels(); }}>
                         <Settings2 className="w-4 h-4 mr-2" /> {model || 'Connect LLM'}
                     </Button>
                 </div>
             </div>
 
             {/* Chat Area */}
-            <Card className="bg-card border-border flex-1 flex flex-col overflow-hidden">
+            <Card className="bg-surface-container-low border-outline-variant/30 flex-1 flex flex-col overflow-hidden">
                 <div className="flex-1 overflow-y-auto p-4 space-y-4">
                     {messages.length === 0 ? (
                         <div className="flex flex-col items-center justify-center h-full text-center">
@@ -154,7 +154,7 @@ export default function AiAdvisor() {
                                 {QUICK_PROMPTS.map((qp, i) => (
                                     <button key={i} onClick={() => sendMessage(qp.prompt)}
                                         disabled={!model || loading}
-                                        className="text-left p-3 rounded-xl border border-border hover:border-primary/50 hover:bg-primary/5 transition-all disabled:opacity-50 disabled:pointer-events-none group">
+                                        className="text-left p-3 rounded-xl border border-outline-variant/30 hover:border-primary/50 hover:bg-primary/5 transition-all disabled:opacity-50 disabled:pointer-events-none group">
                                         <span className="text-lg">{qp.icon}</span>
                                         <p className="text-xs font-medium text-muted-foreground group-hover:text-primary mt-1">{qp.label}</p>
                                     </button>
@@ -168,8 +168,8 @@ export default function AiAdvisor() {
                                     <div className={`max-w-[85%] rounded-2xl px-4 py-3 ${msg.role === 'user'
                                         ? 'bg-primary text-primary-foreground'
                                         : msg.error
-                                            ? 'bg-red-500/10 border border-red-500/20 text-red-400'
-                                            : 'bg-muted/50 border border-border text-card-foreground'
+                                            ? 'bg-destructive/10 border border-destructive/20 text-destructive'
+                                            : 'bg-surface-container/50 border border-outline-variant/30 text-card-foreground'
                                         }`}>
                                         <div className="text-sm whitespace-pre-wrap leading-relaxed" dangerouslySetInnerHTML={{
                                             __html: msg.role === 'assistant'
@@ -190,7 +190,7 @@ export default function AiAdvisor() {
                             ))}
                             {loading && (
                                 <div className="flex justify-start">
-                                    <div className="bg-muted/50 border border-border rounded-2xl px-4 py-3 flex items-center gap-2">
+                                    <div className="bg-surface-container/50 border border-outline-variant/30 rounded-2xl px-4 py-3 flex items-center gap-2">
                                         <Loader2 className="w-4 h-4 animate-spin text-primary" />
                                         <span className="text-sm text-muted-foreground">Thinking...</span>
                                     </div>
@@ -202,7 +202,7 @@ export default function AiAdvisor() {
                 </div>
 
                 {/* Input */}
-                <div className="border-t border-border p-4">
+                <div className="border-t border-outline-variant/30 p-4">
                     <form onSubmit={handleSubmit} className="flex gap-2">
                         <Input
                             ref={inputRef}
@@ -210,7 +210,7 @@ export default function AiAdvisor() {
                             onChange={e => setInput(e.target.value)}
                             placeholder={model ? "Ask about your finances..." : "Connect an LLM first..."}
                             disabled={!model || loading}
-                            className="bg-background border-border flex-1"
+                            className="bg-surface-container border-outline-variant/30 flex-1"
                         />
                         <Button type="submit" disabled={!model || !input.trim() || loading}
                             className="bg-primary text-primary-foreground hover:bg-primary/90">
@@ -223,14 +223,14 @@ export default function AiAdvisor() {
 
             {/* Settings Dialog */}
             <Dialog open={showSettings} onOpenChange={setShowSettings}>
-                <DialogContent className="bg-card border-border text-card-foreground sm:max-w-md">
+                <DialogContent className="bg-surface-container-low border-outline-variant/30 text-card-foreground sm:max-w-md">
                     <DialogHeader><DialogTitle>LLM Connection Settings</DialogTitle></DialogHeader>
                     <div className="space-y-4 pt-4">
                         <div className="space-y-2">
                             <Label>Provider</Label>
                             <Select value={provider} onValueChange={val => { setProvider(val); setBaseUrl(DEFAULT_URLS[val]); setModels([]); setModel(''); }}>
-                                <SelectTrigger className="bg-background border-border"><SelectValue /></SelectTrigger>
-                                <SelectContent className="bg-card border-border text-foreground/80">
+                                <SelectTrigger className="bg-surface-container border-outline-variant/30"><SelectValue /></SelectTrigger>
+                                <SelectContent className="bg-surface-container-low border-outline-variant/30 text-foreground/80">
                                     <SelectItem value="ollama">🦙 Ollama</SelectItem>
                                     <SelectItem value="lmstudio">🔬 LM Studio</SelectItem>
                                 </SelectContent>
@@ -238,7 +238,7 @@ export default function AiAdvisor() {
                         </div>
                         <div className="space-y-2">
                             <Label>Base URL</Label>
-                            <Input className="bg-background border-border font-mono text-sm" value={baseUrl}
+                            <Input className="bg-surface-container border-outline-variant/30 font-mono text-sm" value={baseUrl}
                                 onChange={e => setBaseUrl(e.target.value)}
                                 placeholder={DEFAULT_URLS[provider]} />
                         </div>
@@ -246,7 +246,7 @@ export default function AiAdvisor() {
                             {modelsLoading ? <><Loader2 className="w-4 h-4 animate-spin mr-2" /> Connecting...</> : <><RefreshCw className="w-4 h-4 mr-2" /> Fetch Models</>}
                         </Button>
                         {modelsError && (
-                            <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-3 rounded-xl text-xs">
+                            <div className="bg-destructive/10 border border-destructive/20 text-destructive p-3 rounded-xl text-xs">
                                 ❌ {modelsError}
                             </div>
                         )}
@@ -254,14 +254,14 @@ export default function AiAdvisor() {
                             <div className="space-y-2">
                                 <Label>Model</Label>
                                 <Select value={model} onValueChange={setModel}>
-                                    <SelectTrigger className="bg-background border-border"><SelectValue placeholder="Select a model" /></SelectTrigger>
-                                    <SelectContent className="bg-card border-border text-foreground/80">
+                                    <SelectTrigger className="bg-surface-container border-outline-variant/30"><SelectValue placeholder="Select a model" /></SelectTrigger>
+                                    <SelectContent className="bg-surface-container-low border-outline-variant/30 text-foreground/80">
                                         {models.map(m => <SelectItem key={m.id} value={m.id}>{m.name}</SelectItem>)}
                                     </SelectContent>
                                 </Select>
                             </div>
                         )}
-                        <div className="bg-muted/50 p-3 rounded-xl text-xs text-muted-foreground">
+                        <div className="bg-surface-container/50 p-3 rounded-xl text-xs text-muted-foreground">
                             <p className="font-semibold mb-1">💡 Setup Guide</p>
                             {provider === 'ollama' ? (
                                 <>
@@ -286,7 +286,7 @@ export default function AiAdvisor() {
 
             {/* Export Dialog */}
             <Dialog open={showExport} onOpenChange={setShowExport}>
-                <DialogContent className="bg-card border-border text-card-foreground sm:max-w-md">
+                <DialogContent className="bg-surface-container-low border-outline-variant/30 text-card-foreground sm:max-w-md">
                     <DialogHeader>
                         <DialogTitle>Export Financial Data for LLM</DialogTitle>
                     </DialogHeader>
@@ -300,7 +300,7 @@ export default function AiAdvisor() {
                             </div>
                             <div className="grid grid-cols-2 gap-2">
                                 {Object.entries(exportSections).map(([key, val]) => (
-                                    <label key={key} className={`flex items-center gap-2 p-2 rounded-xl border cursor-pointer text-sm transition-all ${val ? 'border-primary/50 bg-primary/5 text-foreground/80' : 'border-border text-muted-foreground'}`}>
+                                    <label key={key} className={`flex items-center gap-2 p-2 rounded-xl border cursor-pointer text-sm transition-all ${val ? 'border-primary/50 bg-primary/5 text-foreground/80' : 'border-outline-variant/30 text-muted-foreground'}`}>
                                         <input type="checkbox" checked={val}
                                             onChange={() => setExportSections({ ...exportSections, [key]: !val })}
                                             className="accent-primary" />
@@ -313,8 +313,8 @@ export default function AiAdvisor() {
                         <div className="space-y-2">
                             <Label className="text-sm">Transaction History</Label>
                             <Select value={String(exportMonths)} onValueChange={v => setExportMonths(parseInt(v))}>
-                                <SelectTrigger className="bg-background border-border"><SelectValue /></SelectTrigger>
-                                <SelectContent className="bg-card border-border text-foreground/80">
+                                <SelectTrigger className="bg-surface-container border-outline-variant/30"><SelectValue /></SelectTrigger>
+                                <SelectContent className="bg-surface-container-low border-outline-variant/30 text-foreground/80">
                                     <SelectItem value="1">Last 1 month</SelectItem>
                                     <SelectItem value="3">Last 3 months</SelectItem>
                                     <SelectItem value="6">Last 6 months</SelectItem>
@@ -330,7 +330,7 @@ export default function AiAdvisor() {
                                 Copy to Clipboard
                             </Button>
                             <Button variant="outline" onClick={() => handleExport('download')} disabled={exportLoading}
-                                className="border-border text-muted-foreground hover:text-foreground">
+                                className="border-outline-variant/30 text-muted-foreground hover:text-foreground">
                                 <Download className="w-4 h-4 mr-2" /> Download .md
                             </Button>
                         </div>

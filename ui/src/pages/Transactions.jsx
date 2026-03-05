@@ -63,7 +63,7 @@ function PayeeInput({ value, onChange, onBlur }) {
         <div ref={wrapperRef} className="relative w-full">
             <Input
                 ref={inputRef}
-                className="bg-card border-border text-card-foreground focus-visible:ring-indigo-500 w-full"
+                className="bg-surface-container-low border-outline-variant/30 text-card-foreground focus-visible:ring-primary w-full"
                 value={value}
                 onChange={e => handleInput(e.target.value)}
                 onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
@@ -73,11 +73,11 @@ function PayeeInput({ value, onChange, onBlur }) {
                 autoComplete="off"
             />
             {showSuggestions && suggestions.length > 0 && (
-                <div className="absolute z-50 w-full mt-1 bg-card border border-border rounded-xl shadow-lg max-h-60 overflow-auto">
+                <div className="absolute z-50 w-full mt-1 bg-surface-container-low border border-outline-variant/30 rounded-xl shadow-lg max-h-60 overflow-auto">
                     {suggestions.map((s, i) => (
                         <div
                             key={s}
-                            className={`px-3 py-2 cursor-pointer text-sm font-medium ${i === highlighted ? 'bg-indigo-600/20 text-card-foreground' : 'text-foreground/80 hover:bg-secondary/80 hover:text-foreground'}`}
+                            className={`px-3 py-2 cursor-pointer text-sm font-medium ${i === highlighted ? 'bg-primary/20 text-card-foreground' : 'text-foreground/80 hover:bg-surface-container-high hover:text-foreground'}`}
                             onMouseDown={(e) => { e.preventDefault(); selectSuggestion(s); }}
                         >
                             {s}
@@ -320,7 +320,7 @@ export default function Transactions() {
                     <div className="relative w-full sm:w-[240px]">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                         <Input
-                            className="bg-card border-border text-card-foreground placeholder:text-muted-foreground focus-visible:ring-indigo-500 pl-9 w-full"
+                            className="bg-surface-container-low border-outline-variant/30 text-card-foreground placeholder:text-muted-foreground focus-visible:ring-primary pl-9 w-full"
                             placeholder="Search payees, memos..."
                             aria-label="Search transactions"
                             value={filters.search}
@@ -329,7 +329,7 @@ export default function Transactions() {
                     </div>
 
                     <select
-                        className="flex h-10 w-full sm:w-[180px] rounded-xl border border-border bg-card px-3 py-2 text-sm text-card-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                        className="flex h-10 w-full sm:w-[180px] rounded-xl border border-outline-variant/30 bg-surface-container-low px-3 py-2 text-sm text-card-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                         value={filters.account_id}
                         onChange={e => setFilters({ ...filters, account_id: e.target.value, offset: 0 })}
                         aria-label="Filter by account"
@@ -338,7 +338,7 @@ export default function Transactions() {
                         {accounts.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
                     </select>
 
-                    <div className="flex items-center gap-2 bg-card border border-border rounded-xl p-1 w-full sm:w-auto">
+                    <div className="flex items-center gap-2 bg-surface-container-low border border-outline-variant/30 rounded-xl p-1 w-full sm:w-auto">
                         <Input
                             type="date"
                             className="bg-transparent border-none text-card-foreground focus-visible:ring-0 h-8 text-sm w-full sm:w-auto [&::-webkit-calendar-picker-indicator]:filter [&::-webkit-calendar-picker-indicator]:invert"
@@ -358,25 +358,25 @@ export default function Transactions() {
                 </div>
 
                 <div className="flex items-center gap-2 w-full lg:w-auto justify-end">
-                    <Button variant="outline" className="bg-transparent border-border text-muted-foreground hover:bg-secondary hover:text-foreground" onClick={loadDuplicates}>
+                    <Button variant="outline" className="bg-transparent border-outline-variant/30 text-muted-foreground hover:bg-surface-container-high hover:text-foreground" onClick={loadDuplicates}>
                         <Copy className="mr-2 h-4 w-4" /> Duplicates
                     </Button>
-                    <Button variant="outline" className="bg-transparent border-border text-muted-foreground hover:bg-secondary hover:text-foreground" onClick={() => setShowImport(true)}>
+                    <Button variant="outline" className="bg-transparent border-outline-variant/30 text-muted-foreground hover:bg-surface-container-high hover:text-foreground" onClick={() => setShowImport(true)}>
                         <Upload className="mr-2 h-4 w-4" /> Import CSV
                     </Button>
-                    <Button className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-900/20" onClick={openCreate}>
+                    <Button className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm" onClick={openCreate}>
                         <Plus className="mr-2 h-4 w-4" /> New
                     </Button>
                 </div>
             </div>
 
             {/* Transaction Table */}
-            <Card className="bg-card border-border overflow-hidden">
+            <Card className="bg-surface-container-low border-outline-variant/30 overflow-hidden">
                 <CardContent className="p-0">
                     <div className="overflow-x-auto">
                         <Table>
-                            <TableHeader className="bg-muted/50">
-                                <TableRow className="border-border hover:bg-muted/50">
+                            <TableHeader className="bg-surface-container/50">
+                                <TableRow className="border-outline-variant/30 hover:bg-surface-container/50">
                                     <TableHead className="w-[40px] px-2"></TableHead>
                                     <TableHead className="text-muted-foreground font-medium whitespace-nowrap min-w-[100px]">Date</TableHead>
                                     <TableHead className="text-muted-foreground font-medium min-w-[160px]">Payee</TableHead>
@@ -390,12 +390,12 @@ export default function Transactions() {
                             </TableHeader>
                             <TableBody>
                                 {filteredTransactions.map(txn => (
-                                    <TableRow key={txn.id} className="border-border hover:bg-muted/50 transition-colors group">
+                                    <TableRow key={txn.id} className="border-outline-variant/30 hover:bg-surface-container/50 transition-colors group">
                                         <TableCell className="px-2 py-3">
                                             <Button
                                                 variant="ghost"
                                                 size="icon"
-                                                className={`h-6 w-6 rounded-full hover:bg-secondary/80 ${txn.cleared ? 'text-emerald-500' : 'text-muted-foreground'}`}
+                                                className={`h-6 w-6 rounded-full hover:bg-surface-container-high ${txn.cleared ? 'text-success' : 'text-muted-foreground'}`}
                                                 onClick={() => toggleCleared(txn)}
                                                 title={txn.cleared ? 'Cleared' : 'Uncleared'}
                                                 aria-label={txn.cleared ? 'Mark as uncleared' : 'Mark as cleared'}
@@ -421,7 +421,7 @@ export default function Transactions() {
                                                     {txn.category_name || 'Uncategorized'}
                                                 </div>
                                                 {txn.is_split && (
-                                                    <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-medium bg-violet-500/10 text-violet-500" title="Split transaction">
+                                                    <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-medium bg-tertiary/10 text-tertiary" title="Split transaction">
                                                         <Split className="h-3 w-3" />Split
                                                     </span>
                                                 )}
@@ -429,7 +429,7 @@ export default function Transactions() {
                                         </TableCell>
                                         <TableCell className="text-muted-foreground text-sm py-3">{txn.account_name}</TableCell>
                                         <TableCell className="text-muted-foreground text-sm py-3 max-w-[200px] truncate" title={txn.memo}>{txn.memo}</TableCell>
-                                        <TableCell className={`text-right font-mono font-medium py-3 ${parseFloat(txn.amount) >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+                                        <TableCell className={`text-right font-mono font-medium py-3 ${parseFloat(txn.amount) >= 0 ? 'text-success' : 'text-destructive'}`}>
                                             {fmt(txn.amount)}
                                         </TableCell>
                                         <TableCell className="text-right font-mono text-sm text-muted-foreground py-3">
@@ -437,10 +437,10 @@ export default function Transactions() {
                                         </TableCell>
                                         <TableCell className="py-3 pr-4">
                                             <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-blue-400" onClick={() => openEdit(txn)} title="Edit" aria-label="Edit transaction">
+                                                <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-info" onClick={() => openEdit(txn)} title="Edit" aria-label="Edit transaction">
                                                     <Edit className="h-3.5 w-3.5" />
                                                 </Button>
-                                                <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-rose-600" onClick={() => handleDelete(txn.id)} title="Delete" aria-label="Delete transaction">
+                                                <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-destructive" onClick={() => handleDelete(txn.id)} title="Delete" aria-label="Delete transaction">
                                                     <Trash2 className="h-3.5 w-3.5" />
                                                 </Button>
                                             </div>
@@ -463,7 +463,7 @@ export default function Transactions() {
                         <Button
                             variant="outline"
                             size="sm"
-                            className="bg-card border-border text-muted-foreground hover:bg-secondary"
+                            className="bg-surface-container-low border-outline-variant/30 text-muted-foreground hover:bg-surface-container-high"
                             disabled={filters.offset === 0}
                             onClick={() => setFilters({ ...filters, offset: Math.max(0, filters.offset - filters.limit) })}
                         >
@@ -472,7 +472,7 @@ export default function Transactions() {
                         <Button
                             variant="outline"
                             size="sm"
-                            className="bg-card border-border text-muted-foreground hover:bg-secondary"
+                            className="bg-surface-container-low border-outline-variant/30 text-muted-foreground hover:bg-surface-container-high"
                             disabled={filters.offset + filters.limit >= total}
                             onClick={() => setFilters({ ...filters, offset: filters.offset + filters.limit })}
                         >
@@ -483,7 +483,7 @@ export default function Transactions() {
             )}
 
             {filteredTransactions.length === 0 && (
-                <div className="flex flex-col items-center justify-center py-20 text-center border-2 border-dashed border-border rounded-3xl bg-muted/30">
+                <div className="flex flex-col items-center justify-center py-20 text-center border-2 border-dashed border-outline-variant/30 rounded-xl bg-surface-container/50">
                     <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center mb-4">
                         <ArrowUpDown className="h-8 w-8 text-muted-foreground" />
                     </div>
@@ -492,7 +492,7 @@ export default function Transactions() {
                         {filters.search ? 'Try adjusting your search or filters.' : 'Add your first transaction to see it here.'}
                     </p>
                     {!filters.search && (
-                        <Button className="mt-6 bg-indigo-600 hover:bg-indigo-700" onClick={openCreate}>
+                        <Button className="mt-6 bg-primary hover:bg-primary/90" onClick={openCreate}>
                             <Plus className="mr-2 h-4 w-4" /> Add Transaction
                         </Button>
                     )}
@@ -501,7 +501,7 @@ export default function Transactions() {
 
             {/* Add/Edit Transaction Modal */}
             <Dialog open={showModal} onOpenChange={setShowModal}>
-                <DialogContent className="sm:max-w-[550px] bg-background border-border text-foreground/80">
+                <DialogContent className="sm:max-w-[550px] bg-surface-container border-outline-variant/30 text-foreground/80">
                     <DialogHeader>
                         <DialogTitle className="text-xl font-semibold mb-2 text-card-foreground">
                             {editing ? 'Edit Transaction' : 'New Transaction'}
@@ -513,7 +513,7 @@ export default function Transactions() {
                                 <Label htmlFor="account_id" className="text-muted-foreground text-xs uppercase tracking-wider">Account</Label>
                                 <select
                                     id="account_id"
-                                    className="flex h-10 w-full rounded-xl border border-border bg-card px-3 py-2 text-sm text-card-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                                    className="flex h-10 w-full rounded-xl border border-outline-variant/30 bg-surface-container-low px-3 py-2 text-sm text-card-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                                     value={form.account_id}
                                     onChange={e => setForm({ ...form, account_id: e.target.value })}
                                     required
@@ -527,7 +527,7 @@ export default function Transactions() {
                                 <Input
                                     id="date"
                                     type="date"
-                                    className="bg-card border-border text-card-foreground focus-visible:ring-indigo-500 [&::-webkit-calendar-picker-indicator]:filter [&::-webkit-calendar-picker-indicator]:invert"
+                                    className="bg-surface-container-low border-outline-variant/30 text-card-foreground focus-visible:ring-primary [&::-webkit-calendar-picker-indicator]:filter [&::-webkit-calendar-picker-indicator]:invert"
                                     value={form.date}
                                     onChange={e => setForm({ ...form, date: e.target.value })}
                                     required
@@ -547,7 +547,7 @@ export default function Transactions() {
                                         id="amount"
                                         type="number"
                                         step="0.01"
-                                        className="bg-card border-border text-card-foreground placeholder:text-muted-foreground focus-visible:ring-indigo-500 font-mono text-lg pr-12"
+                                        className="bg-surface-container-low border-outline-variant/30 text-card-foreground placeholder:text-muted-foreground focus-visible:ring-primary font-mono text-lg pr-12"
                                         value={form.amount}
                                         onChange={e => setForm({ ...form, amount: e.target.value })}
                                         placeholder="-50.00"
@@ -565,7 +565,7 @@ export default function Transactions() {
                             <Label htmlFor="category_id" className="text-muted-foreground text-xs uppercase tracking-wider">Category</Label>
                             <select
                                 id="category_id"
-                                className="flex h-10 w-full rounded-xl border border-border bg-card px-3 py-2 text-sm text-card-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                                className="flex h-10 w-full rounded-xl border border-outline-variant/30 bg-surface-container-low px-3 py-2 text-sm text-card-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                                 value={form.category_id}
                                 onChange={e => setForm({ ...form, category_id: e.target.value })}
                                 disabled={form.is_split}
@@ -604,11 +604,11 @@ export default function Transactions() {
                                 </div>
                             </div>
                             {form.splits.length > 0 && (
-                                <div className="space-y-2 border border-border rounded-xl p-3 bg-muted/20">
+                                <div className="space-y-2 border border-outline-variant/30 rounded-xl p-3 bg-surface-container/30">
                                     {form.splits.map((split, idx) => (
                                         <div key={idx} className="flex items-center gap-2">
                                             <select
-                                                className="flex-1 h-8 rounded-lg border border-border bg-card px-2 text-xs"
+                                                className="flex-1 h-8 rounded-lg border border-outline-variant/30 bg-surface-container-low px-2 text-xs"
                                                 value={split.category_id}
                                                 onChange={e => updateSplit(idx, 'category_id', e.target.value)}
                                             >
@@ -627,7 +627,7 @@ export default function Transactions() {
                                                 value={split.memo}
                                                 onChange={e => updateSplit(idx, 'memo', e.target.value)}
                                             />
-                                            <Button type="button" variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-rose-500" onClick={() => removeSplit(idx)}>
+                                            <Button type="button" variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-destructive" onClick={() => removeSplit(idx)}>
                                                 <X className="h-3.5 w-3.5" />
                                             </Button>
                                         </div>
@@ -645,7 +645,7 @@ export default function Transactions() {
                             <Label htmlFor="memo" className="text-muted-foreground text-xs uppercase tracking-wider">Memo</Label>
                             <Input
                                 id="memo"
-                                className="bg-card border-border text-card-foreground placeholder:text-muted-foreground focus-visible:ring-indigo-500"
+                                className="bg-surface-container-low border-outline-variant/30 text-card-foreground placeholder:text-muted-foreground focus-visible:ring-primary"
                                 value={form.memo}
                                 onChange={e => setForm({ ...form, memo: e.target.value })}
                                 placeholder="Optional note about this transaction"
@@ -656,7 +656,7 @@ export default function Transactions() {
                             <input
                                 type="checkbox"
                                 id="cleared"
-                                className="h-4 w-4 rounded border-border bg-card text-primary focus:ring-primary focus:ring-offset-background"
+                                className="h-4 w-4 rounded border-outline-variant/30 bg-surface-container-low text-primary focus:ring-primary focus:ring-offset-background"
                                 checked={form.cleared}
                                 onChange={e => setForm({ ...form, cleared: e.target.checked })}
                             />
@@ -667,12 +667,12 @@ export default function Transactions() {
 
                         {/* Attachments Section */}
                         {editing && (
-                            <div className="border-t border-border pt-4 mt-4">
+                            <div className="border-t border-outline-variant/30 pt-4 mt-4">
                                 <Label className="text-muted-foreground text-xs uppercase tracking-wider mb-3 block">Receipts & Attachments</Label>
 
                                 <div className="space-y-3">
                                     {form.attachments?.map(att => (
-                                        <div key={att.id} className="flex items-center justify-between p-2 rounded-lg border border-border bg-muted/20">
+                                        <div key={att.id} className="flex items-center justify-between p-2 rounded-lg border border-outline-variant/30 bg-surface-container/30">
                                             <div className="flex items-center gap-3 overflow-hidden">
                                                 <div className="h-8 w-8 rounded bg-primary/10 flex items-center justify-center shrink-0">
                                                     {att.mime_type.startsWith('image/') ? (
@@ -696,7 +696,7 @@ export default function Transactions() {
                                             <Button
                                                 variant="ghost"
                                                 size="icon"
-                                                className="h-8 w-8 text-muted-foreground hover:text-rose-500 hover:bg-rose-500/10 shrink-0"
+                                                className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 shrink-0"
                                                 onClick={() => handleFileDelete(att.id)}
                                                 type="button"
                                                 aria-label="Delete attachment"
@@ -706,7 +706,7 @@ export default function Transactions() {
                                         </div>
                                     ))}
 
-                                    <div className="relative border-2 border-dashed border-border rounded-xl p-4 text-center hover:bg-muted/30 transition-colors">
+                                    <div className="relative border-2 border-dashed border-outline-variant/30 rounded-xl p-4 text-center hover:bg-surface-container/50 transition-colors">
                                         <input
                                             type="file"
                                             ref={fileInputRef}
@@ -732,17 +732,17 @@ export default function Transactions() {
                             </div>
                         )}
 
-                        <DialogFooter className="pt-4 border-t border-border flex flex-col sm:flex-row justify-between gap-4 sm:gap-2">
+                        <DialogFooter className="pt-4 border-t border-outline-variant/30 flex flex-col sm:flex-row justify-between gap-4 sm:gap-2">
                             {editing ? (
-                                <Button type="button" variant="outline" className="text-rose-600 border-rose-200 hover:bg-rose-50 hover:border-rose-300 w-full sm:w-auto" onClick={() => { setShowModal(false); handleDelete(editing.id); }}>
+                                <Button type="button" variant="outline" className="text-destructive border-destructive/30 hover:bg-destructive/10 hover:border-destructive/50 w-full sm:w-auto" onClick={() => { setShowModal(false); handleDelete(editing.id); }}>
                                     Delete
                                 </Button>
                             ) : <div />}
                             <div className="flex gap-2 w-full sm:w-auto justify-end">
-                                <Button type="button" variant="ghost" className="text-muted-foreground hover:text-foreground hover:bg-secondary flex-1 sm:flex-none" onClick={() => setShowModal(false)}>
+                                <Button type="button" variant="ghost" className="text-muted-foreground hover:text-foreground hover:bg-surface-container-high flex-1 sm:flex-none" onClick={() => setShowModal(false)}>
                                     Cancel
                                 </Button>
-                                <Button type="submit" className="bg-indigo-600 hover:bg-indigo-700 text-white flex-1 sm:flex-none">
+                                <Button type="submit" className="bg-primary hover:bg-primary/90 text-primary-foreground flex-1 sm:flex-none">
                                     {editing ? 'Save Changes' : 'Add Transaction'}
                                 </Button>
                             </div>
@@ -753,7 +753,7 @@ export default function Transactions() {
 
             {/* Import CSV Modal */}
             <Dialog open={showImport} onOpenChange={setShowImport}>
-                <DialogContent className="sm:max-w-[425px] bg-background border-border text-foreground/80">
+                <DialogContent className="sm:max-w-[425px] bg-surface-container border-outline-variant/30 text-foreground/80">
                     <DialogHeader>
                         <DialogTitle className="text-xl font-semibold mb-2 text-card-foreground">Import CSV</DialogTitle>
                         <DialogDescription className="text-muted-foreground">
@@ -766,7 +766,7 @@ export default function Transactions() {
                             <Label htmlFor="importAccountId" className="text-muted-foreground text-xs uppercase tracking-wider">Target Account</Label>
                             <select
                                 id="importAccountId"
-                                className="flex h-10 w-full rounded-xl border border-border bg-card px-3 py-2 text-sm text-card-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                                className="flex h-10 w-full rounded-xl border border-outline-variant/30 bg-surface-container-low px-3 py-2 text-sm text-card-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                                 value={importAccountId}
                                 onChange={e => setImportAccountId(e.target.value)}
                             >
@@ -775,7 +775,7 @@ export default function Transactions() {
                             </select>
                         </div>
 
-                        <div className={`border-2 border-dashed rounded-2xl p-6 text-center ${!importAccountId ? 'border-border bg-muted/50 opacity-50' : 'border-indigo-500/30 bg-indigo-500/5 hover:bg-secondary cursor-pointer'} transition-colors relative`}>
+                        <div className={`border-2 border-dashed rounded-2xl p-6 text-center ${!importAccountId ? 'border-outline-variant/30 bg-surface-container/50 opacity-50' : 'border-primary/30 bg-primary/5 hover:bg-surface-container-high cursor-pointer'} transition-colors relative`}>
                             <Input
                                 type="file"
                                 accept=".csv"
@@ -794,8 +794,8 @@ export default function Transactions() {
                         </div>
                     </div>
 
-                    <DialogFooter className="border-t border-border pt-4">
-                        <Button variant="ghost" className="text-muted-foreground hover:text-foreground hover:bg-secondary w-full" onClick={() => setShowImport(false)}>
+                    <DialogFooter className="border-t border-outline-variant/30 pt-4">
+                        <Button variant="ghost" className="text-muted-foreground hover:text-foreground hover:bg-surface-container-high w-full" onClick={() => setShowImport(false)}>
                             Cancel
                         </Button>
                     </DialogFooter>
@@ -804,7 +804,7 @@ export default function Transactions() {
 
             {/* Duplicate Review Dialog */}
             <Dialog open={showDuplicates} onOpenChange={setShowDuplicates}>
-                <DialogContent className="sm:max-w-[600px] bg-background border-border text-foreground/80 max-h-[80vh] overflow-y-auto">
+                <DialogContent className="sm:max-w-[600px] bg-surface-container border-outline-variant/30 text-foreground/80 max-h-[80vh] overflow-y-auto">
                     <DialogHeader>
                         <DialogTitle className="text-xl font-semibold text-card-foreground flex items-center gap-2">
                             <GitMerge className="h-5 w-5" /> Duplicate Review
@@ -819,12 +819,12 @@ export default function Transactions() {
                             <p className="text-center text-muted-foreground py-8">No duplicates found. Your records are clean!</p>
                         ) : (
                             duplicates.map((group, gi) => (
-                                <div key={gi} className="border border-border rounded-xl p-3 space-y-2">
+                                <div key={gi} className="border border-outline-variant/30 rounded-xl p-3 space-y-2">
                                     <p className="text-xs font-medium text-muted-foreground">
                                         {group.date} · {group.payee} · {fmt(group.amount)} ({group.transactions?.length || 0} matches)
                                     </p>
                                     {group.transactions?.map((txn, ti) => (
-                                        <div key={txn.id} className="flex items-center justify-between p-2 rounded-lg bg-muted/30">
+                                        <div key={txn.id} className="flex items-center justify-between p-2 rounded-lg bg-surface-container/50">
                                             <div className="text-sm">
                                                 <span className="font-medium">{txn.account_name}</span>
                                                 <span className="text-muted-foreground ml-2">{txn.memo || 'No memo'}</span>

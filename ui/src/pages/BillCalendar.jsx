@@ -96,47 +96,43 @@ export default function BillCalendar() {
         <div className="max-w-6xl mx-auto space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                 <div className="flex items-center gap-3">
-                    <div className="p-2 bg-amber-500/10 rounded-2xl text-amber-600"><CalendarDays className="h-6 w-6" /></div>
+                    <div className="p-2 bg-warning/10 rounded-2xl text-warning"><CalendarDays className="h-6 w-6" /></div>
                     <div>
-                        <h2 className="text-2xl font-bold tracking-tight text-card-foreground">Bill Calendar</h2>
+                        <h2 className="text-2xl font-medium tracking-tight text-card-foreground">Bill Calendar</h2>
                         <p className="text-muted-foreground">See when your bills and subscriptions are due.</p>
                     </div>
                 </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                <Card className="h-full min-h-[136px] relative overflow-hidden border-none bg-gradient-to-br from-amber-500 via-orange-500 to-orange-600 text-white shadow-lg shadow-orange-900/20">
-                    <div className="absolute inset-0 bg-white/5 opacity-50 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-white/20 via-white/5 to-transparent mix-blend-overlay"></div>
-                    <div className="absolute -top-6 -right-6 p-4 opacity-10 pointer-events-none transform rotate-12">
-                        <span className="text-[128px] font-bold leading-none select-none">{settings.currency_symbol || '$'}</span>
-                    </div>
-                    <CardHeader className="pb-2 relative z-10">
-                        <CardDescription className="text-amber-100 font-medium tracking-wide text-xs uppercase">Due This Month</CardDescription>
-                        <CardTitle className="text-4xl font-bold text-white tracking-tight drop-shadow-sm">{fmt(totalThisMonth)}</CardTitle>
+                <Card className="h-full min-h-[136px] relative overflow-hidden border-none bg-warning text-warning-foreground shadow-sm">
+                    <CardHeader className="pb-2">
+                        <CardDescription className="text-warning-foreground/80 font-medium text-xs">Due This Month</CardDescription>
+                        <CardTitle className="text-4xl font-medium text-warning-foreground tracking-tight">{fmt(totalThisMonth)}</CardTitle>
                     </CardHeader>
                 </Card>
-                <Card className="h-full min-h-[136px] bg-card border-border shadow-sm hover:shadow-md transition-shadow">
+                <Card className="h-full min-h-[136px] bg-surface-container-low border-outline-variant/30 shadow-sm hover:shadow-md transition-shadow">
                     <CardHeader className="pb-2">
-                        <CardDescription className="text-muted-foreground font-medium tracking-wide text-xs uppercase">Bills This Month</CardDescription>
-                        <CardTitle className="text-3xl font-bold text-card-foreground">{billCount}</CardTitle>
+                        <CardDescription className="text-muted-foreground font-medium text-xs">Bills This Month</CardDescription>
+                        <CardTitle className="text-3xl font-medium text-card-foreground">{billCount}</CardTitle>
                     </CardHeader>
                 </Card>
-                <Card className="h-full min-h-[136px] bg-card border-border shadow-sm hover:shadow-md transition-shadow">
+                <Card className="h-full min-h-[136px] bg-surface-container-low border-outline-variant/30 shadow-sm hover:shadow-md transition-shadow">
                     <CardHeader className="pb-2">
-                        <CardDescription className="text-muted-foreground font-medium tracking-wide text-xs uppercase">Active Subscriptions</CardDescription>
-                        <CardTitle className="text-3xl font-bold text-card-foreground">{subs.filter(s => s.status === 'active').length}</CardTitle>
+                        <CardDescription className="text-muted-foreground font-medium text-xs">Active Subscriptions</CardDescription>
+                        <CardTitle className="text-3xl font-medium text-card-foreground">{subs.filter(s => s.status === 'active').length}</CardTitle>
                     </CardHeader>
                 </Card>
             </div>
 
-            <Card className="bg-card border-border">
+            <Card className="bg-surface-container-low border-outline-variant/30">
                 <CardHeader className="pb-3 flex flex-row items-center justify-between">
                     <div className="flex items-center gap-3">
                         <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground" onClick={prevMonth}><ChevronLeft className="w-4 h-4" /></Button>
-                        <h3 className="text-lg font-bold text-card-foreground min-w-[180px] text-center">{monthName}</h3>
+                        <h3 className="text-lg font-medium text-card-foreground min-w-[180px] text-center">{monthName}</h3>
                         <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground" onClick={nextMonth}><ChevronRight className="w-4 h-4" /></Button>
                     </div>
-                    <Button variant="outline" size="sm" className="text-xs border-border text-muted-foreground hover:text-foreground" onClick={goToday}>Today</Button>
+                    <Button variant="outline" size="sm" className="text-xs border-outline-variant/30 text-muted-foreground hover:text-foreground" onClick={goToday}>Today</Button>
                 </CardHeader>
                 <CardContent>
                     {loading ? (
@@ -151,16 +147,16 @@ export default function BillCalendar() {
                             <div className="grid grid-cols-7 gap-px">
                                 {cells.map((day, i) => (
                                     <div key={i}
-                                        className={`min-h-[80px] p-1.5 rounded-xl border transition-colors ${day ? (isToday(day) ? 'border-primary bg-primary/5' : 'border-border hover:border-muted-foreground/30') : 'border-transparent'
+                                        className={`min-h-[80px] p-1.5 rounded-xl border transition-colors ${day ? (isToday(day) ? 'border-primary bg-primary/5' : 'border-outline-variant/30 hover:border-muted-foreground/30') : 'border-transparent'
                                             }`}>
                                         {day && (
                                             <>
-                                                <div className={`text-xs font-medium mb-1 ${isToday(day) ? 'text-primary font-bold' : 'text-muted-foreground'}`}>
+                                                <div className={`text-xs font-medium mb-1 ${isToday(day) ? 'text-primary font-medium' : 'text-muted-foreground'}`}>
                                                     {day}
                                                 </div>
                                                 <div className="space-y-0.5">
                                                     {(billsByDay[day] || []).map((sub, j) => (
-                                                        <div key={j} className={`text-[9px] px-1.5 py-0.5 rounded-md truncate font-medium ${sub.source === 'recurring' ? 'bg-blue-500/10 text-blue-500' : 'bg-amber-500/10 text-amber-500'}`} title={`${sub.name} — ${fmt(Math.abs(sub.amount))}${sub.source === 'recurring' ? ' (projected)' : ''}`}>
+                                                        <div key={j} className={`text-[9px] px-1.5 py-0.5 rounded-md truncate font-medium ${sub.source === 'recurring' ? 'bg-info/10 text-info' : 'bg-warning/10 text-warning'}`} title={`${sub.name} — ${fmt(Math.abs(sub.amount))}${sub.source === 'recurring' ? ' (projected)' : ''}`}>
                                                             {sub.name}
                                                         </div>
                                                     ))}
@@ -177,21 +173,21 @@ export default function BillCalendar() {
 
             {/* Upcoming Bills List */}
             {Object.keys(billsByDay).length > 0 && (
-                <Card className="bg-card border-border">
+                <Card className="bg-surface-container-low border-outline-variant/30">
                     <CardHeader className="pb-3">
                         <CardTitle className="text-base text-card-foreground">Upcoming Bills This Month</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-2">
                         {Object.entries(billsByDay).sort(([a], [b]) => a - b).map(([day, bills]) =>
                             bills.map((sub, i) => (
-                                <div key={`${day}-${i}`} className="flex items-center justify-between py-2 px-3 rounded-xl hover:bg-muted/30 transition-colors">
+                                <div key={`${day}-${i}`} className="flex items-center justify-between py-2 px-3 rounded-xl hover:bg-surface-container/50 transition-colors">
                                     <div className="flex items-center gap-3">
-                                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold ${sub.source === 'recurring' ? 'bg-blue-500/10 text-blue-500' : 'bg-amber-500/10 text-amber-500'}`}>{day}</div>
+                                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs font-medium ${sub.source === 'recurring' ? 'bg-info/10 text-info' : 'bg-warning/10 text-warning'}`}>{day}</div>
                                         <div>
                                             <div className="flex items-center gap-1.5">
                                                 <span className="text-sm font-medium text-foreground/80">{sub.name}</span>
                                                 {sub.source === 'recurring' && (
-                                                    <span className="inline-flex items-center rounded-full bg-blue-500/10 px-1.5 py-0.5 text-[9px] font-medium text-blue-500">
+                                                    <span className="inline-flex items-center rounded-full bg-info/10 px-1.5 py-0.5 text-[9px] font-medium text-info">
                                                         <Clock className="mr-0.5 h-2 w-2" /> projected
                                                     </span>
                                                 )}
@@ -209,7 +205,7 @@ export default function BillCalendar() {
 
             {/* 60-Day Upcoming Timeline */}
             {upcoming && upcoming.projected && upcoming.projected.length > 0 && (
-                <Card className="bg-card border-border">
+                <Card className="bg-surface-container-low border-outline-variant/30">
                     <CardHeader className="pb-3">
                         <CardTitle className="flex items-center gap-2 text-base text-card-foreground">
                             <Clock className="h-4 w-4 text-primary" />
@@ -228,9 +224,9 @@ export default function BillCalendar() {
                                 const isPast = daysUntil < 0;
                                 const isSoon = daysUntil >= 0 && daysUntil <= 3;
                                 return (
-                                    <div key={i} className={`flex items-center justify-between py-2 px-3 rounded-xl transition-colors ${isPast ? 'opacity-50' : 'hover:bg-muted/30'}`}>
+                                    <div key={i} className={`flex items-center justify-between py-2 px-3 rounded-xl transition-colors ${isPast ? 'opacity-50' : 'hover:bg-surface-container/50'}`}>
                                         <div className="flex items-center gap-3">
-                                            <div className={`w-10 h-10 rounded-xl flex flex-col items-center justify-center text-xs font-bold ${isSoon ? 'bg-amber-500/10 text-amber-500' : 'bg-muted/50 text-muted-foreground'}`}>
+                                            <div className={`w-10 h-10 rounded-xl flex flex-col items-center justify-center text-xs font-medium ${isSoon ? 'bg-warning/10 text-warning' : 'bg-surface-container/50 text-muted-foreground'}`}>
                                                 <span className="text-[9px] uppercase">{projDate.toLocaleDateString('en-US', { month: 'short' })}</span>
                                                 <span className="text-sm -mt-0.5">{projDate.getDate()}</span>
                                             </div>
@@ -238,7 +234,7 @@ export default function BillCalendar() {
                                                 <div className="flex items-center gap-1.5">
                                                     <span className="text-sm font-medium text-foreground/80">{proj.payee}</span>
                                                     {isSoon && (
-                                                        <AlertCircle className="h-3 w-3 text-amber-500" title="Due soon" />
+                                                        <AlertCircle className="h-3 w-3 text-warning" title="Due soon" />
                                                     )}
                                                 </div>
                                                 <div className="text-[10px] text-muted-foreground flex items-center gap-1">
