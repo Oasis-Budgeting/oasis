@@ -52,6 +52,8 @@ services:
   oasis:
     image: ghcr.io/oasis-budgeting/oasis:latest
     container_name: oasis
+    environment:
+      - JWT_SECRET=${JWT_SECRET:?set in .env or shell environment}
     ports:
       - "3000:3000"
     volumes:
@@ -64,12 +66,18 @@ services:
       retries: 3
 ```
 
-2. Start the container:
+2. Create a `.env` file in the same directory as `docker-compose.yml`:
+
+```env
+JWT_SECRET=replace-with-a-long-random-secret
+```
+
+3. Start the container:
 ```bash
 docker-compose up -d
 ```
 
-3. Access the application in your browser at `http://localhost:3000`.
+4. Access the application in your browser at `http://localhost:3000`.
 
 ## 💻 Local Development
 

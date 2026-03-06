@@ -2,6 +2,8 @@ services:
   oasis:
     image: ghcr.io/oasis-budgeting/oasis:latest
     container_name: oasis
+    environment:
+      - JWT_SECRET=${JWT_SECRET:?JWT_SECRET must be set in .env or shell environment}
     ports:
       - "3000:3000"
     volumes:
