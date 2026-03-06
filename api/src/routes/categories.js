@@ -4,6 +4,14 @@ import authenticate from '../middleware/auth.js';
 export default async function categoryRoutes(fastify) {
     fastify.addHook('preHandler', authenticate);
 
+    // List flat categories for non-web clients
+    fastify.get('/categories', async (request) => {
+        return db('categories')
+            .select('id', 'group_id', 'name', 'sort_order', 'goal_type', 'goal_amount', 'goal_target_date', 'hidden')
+            .where('user_id', request.user.id)
+            .orderBy('sort_order');
+    });
+
     // List all category groups with their categories
     fastify.get('/category-groups', async (request) => {
         const groups = await db('category_groups')

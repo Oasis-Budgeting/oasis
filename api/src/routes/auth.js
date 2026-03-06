@@ -2,8 +2,9 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import db from '../db/knex.js';
 import authenticate from '../middleware/auth.js';
+import { getJwtSecret } from '../config/auth.js';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-in-prod';
+const JWT_SECRET = getJwtSecret();
 
 export default async function authRoutes(fastify) {
     // Register User
@@ -25,51 +26,52 @@ export default async function authRoutes(fastify) {
             const salt = await bcrypt.genSalt(10);
             const password_hash = await bcrypt.hash(password, salt);
 
-            // Insert user
-            const [userId] = await db('users').insert({
-                name,
-                username,
-                email,
-                password_hash
-            });
-
-            // Initialize default settings for the user
-            await db('settings').insert([
-                { user_id: userId, key: 'currency', value: 'USD' },
-                { user_id: userId, key: 'locale', value: 'en-US' },
-                { user_id: userId, key: 'currency_symbol', value: '$' },
-                { user_id: userId, key: 'theme', value: 'dark' }
-            ]);
-
-            // Initialize default categories for the user
-            const defaultGroups = [
-                { name: 'Housing', categories: [{ name: 'Rent/Mortgage' }, { name: 'Home Maintenance' }, { name: 'Property Taxes' }] },
-                { name: 'Utilities', categories: [{ name: 'Electricity' }, { name: 'Water' }, { name: 'Internet' }, { name: 'Trash' }, { name: 'Cell Phone' }] },
-                { name: 'Food', categories: [{ name: 'Groceries' }, { name: 'Dining Out' }] },
-                { name: 'Transportation', categories: [{ name: 'Auto Loan' }, { name: 'Gas' }, { name: 'Auto Maintenance' }, { name: 'Auto Insurance' }, { name: 'Public Transit' }] },
-                { name: 'Personal', categories: [{ name: 'Clothing' }, { name: 'Entertainment' }, { name: 'Subscriptions' }, { name: 'Hobbies' }] },
-                { name: 'Health & Fitness', categories: [{ name: 'Medical/Dental' }, { name: 'Gym/Sports' }, { name: 'Pharmacy' }] },
-                { name: 'Savings & Debt', categories: [{ name: 'Emergency Fund' }, { name: 'Retirement' }, { name: 'Extra Debt Payment' }] }
-            ];
-
-            let groupSortOrder = 1;
-            for (const group of defaultGroups) {
-                const [groupId] = await db('category_groups').insert({
-                    user_id: userId,
-                    name: group.name,
-                    sort_order: groupSortOrder++
+            const userId = await db.transaction(async (trx) => {
+                const [newUserId] = await trx('users').insert({
+                    name,
+                    username,
+                    email,
+                    password_hash
                 });
 
-                let categorySortOrder = 1;
-                const categoryInserts = group.categories.map(cat => ({
-                    user_id: userId,
-                    group_id: groupId,
-                    name: cat.name,
-                    sort_order: categorySortOrder++
-                }));
+                await trx('settings').insert([
+                    { user_id: newUserId, key: 'currency', value: 'USD' },
+                    { user_id: newUserId, key: 'locale', value: 'en-US' },
+                    { user_id: newUserId, key: 'currency_symbol', value: '$' },
+                    { user_id: newUserId, key: 'theme', value: 'dark' }
+                ]);
 
-                await db('categories').insert(categoryInserts);
-            }
+                const defaultGroups = [
+                    { name: 'Housing', categories: [{ name: 'Rent/Mortgage' }, { name: 'Home Maintenance' }, { name: 'Property Taxes' }] },
+                    { name: 'Utilities', categories: [{ name: 'Electricity' }, { name: 'Water' }, { name: 'Internet' }, { name: 'Trash' }, { name: 'Cell Phone' }] },
+                    { name: 'Food', categories: [{ name: 'Groceries' }, { name: 'Dining Out' }] },
+                    { name: 'Transportation', categories: [{ name: 'Auto Loan' }, { name: 'Gas' }, { name: 'Auto Maintenance' }, { name: 'Auto Insurance' }, { name: 'Public Transit' }] },
+                    { name: 'Personal', categories: [{ name: 'Clothing' }, { name: 'Entertainment' }, { name: 'Subscriptions' }, { name: 'Hobbies' }] },
+                    { name: 'Health & Fitness', categories: [{ name: 'Medical/Dental' }, { name: 'Gym/Sports' }, { name: 'Pharmacy' }] },
+                    { name: 'Savings & Debt', categories: [{ name: 'Emergency Fund' }, { name: 'Retirement' }, { name: 'Extra Debt Payment' }] }
+                ];
+
+                let groupSortOrder = 1;
+                for (const group of defaultGroups) {
+                    const [groupId] = await trx('category_groups').insert({
+                        user_id: newUserId,
+                        name: group.name,
+                        sort_order: groupSortOrder++
+                    });
+
+                    let categorySortOrder = 1;
+                    const categoryInserts = group.categories.map(cat => ({
+                        user_id: newUserId,
+                        group_id: groupId,
+                        name: cat.name,
+                        sort_order: categorySortOrder++
+                    }));
+
+                    await trx('categories').insert(categoryInserts);
+                }
+
+                return newUserId;
+            });
 
             // Generate token
             const token = jwt.sign({ userId }, JWT_SECRET, { expiresIn: '7d' });
@@ -150,7 +152,8 @@ export default async function authRoutes(fastify) {
 
             // MOCK EMAIL SERVICE 
             // In a real app, integrate SendGrid/AWS SES here
-            const resetUrl = `http://localhost:3003/reset-password?token=${resetToken}`;
+            const appBaseUrl = process.env.APP_BASE_URL || 'http://localhost:3000';
+            const resetUrl = `${appBaseUrl.replace(/\/$/, '')}/reset-password?token=${resetToken}`;
             request.log.info(`\n\n=== PASSWORD RESET EMAIL ===\nTo: ${user.email}\nLink: ${resetUrl}\n============================\n`);
 
             return reply.send({ message: 'If the email exists, a reset link has been sent.' });

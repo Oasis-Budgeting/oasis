@@ -129,6 +129,11 @@ export default async function transactionRoutes(fastify) {
         const account = await db('accounts').where({ id: account_id, user_id: userId }).first();
         if (!account) return reply.code(403).send({ error: 'Invalid account_id' });
 
+        if (category_id) {
+            const category = await db('categories').where({ id: category_id, user_id: userId }).first();
+            if (!category) return reply.code(403).send({ error: 'Invalid category_id' });
+        }
+
         if (transfer_account_id) {
             const transferAccount = await db('accounts').where({ id: transfer_account_id, user_id: userId }).first();
             if (!transferAccount) return reply.code(403).send({ error: 'Invalid transfer_account_id' });
@@ -143,50 +148,63 @@ export default async function transactionRoutes(fastify) {
         }
 
         const isSplit = splits && Array.isArray(splits) && splits.length > 0;
-
-        const [id] = await db('transactions').insert({
-            user_id: userId, account_id,
-            category_id: isSplit ? null : category_id,
-            date, payee, memo, amount,
-            transfer_account_id, cleared,
-            is_split: isSplit
-        });
-
-        // Insert splits
         if (isSplit) {
-            await db('transaction_splits').insert(
-                splits.map((s, i) => ({
-                    transaction_id: id,
-                    category_id: s.category_id || null,
-                    amount: s.amount,
-                    memo: s.memo || null,
-                    payee: s.payee || null,
-                    sort_order: s.sort_order ?? i
-                }))
-            );
+            const splitTotal = splits.reduce((sum, split) => sum + parseFloat(split.amount || 0), 0);
+            if (Math.abs(splitTotal - parseFloat(amount)) > 0.01) {
+                return reply.code(400).send({ error: 'Split amounts must equal the transaction amount' });
+            }
+
+            for (const split of splits) {
+                if (!split.category_id) continue;
+                const splitCategory = await db('categories').where({ id: split.category_id, user_id: userId }).first();
+                if (!splitCategory) return reply.code(403).send({ error: 'Invalid split category_id' });
+            }
         }
 
-        // Update account balance
-        await updateAccountBalance(account_id, userId);
+        const id = await db.transaction(async (trx) => {
+            const [newId] = await trx('transactions').insert({
+                user_id: userId, account_id,
+                category_id: isSplit ? null : category_id,
+                date, payee, memo, amount,
+                transfer_account_id, cleared,
+                is_split: isSplit
+            });
 
-        if (transfer_account_id) {
-            const transferAccount = await db('accounts').where({ id: transfer_account_id, user_id: userId }).first();
-            // Create matching transfer transaction with descriptive payee
-            await db('transactions').insert({
-                user_id: userId,
-                account_id: transfer_account_id,
-                date,
-                payee: `Transfer: ${account.name}`,
-                memo, amount: -amount,
-                transfer_account_id: account_id,
-                cleared: true
-            });
-            // Update original payee to include target account name
-            await db('transactions').where({ id, user_id: userId }).update({
-                payee: payee || `Transfer: ${transferAccount.name}`
-            });
-            await updateAccountBalance(transfer_account_id, userId);
-        }
+            if (isSplit) {
+                await trx('transaction_splits').insert(
+                    splits.map((s, i) => ({
+                        transaction_id: newId,
+                        category_id: s.category_id || null,
+                        amount: s.amount,
+                        memo: s.memo || null,
+                        payee: s.payee || null,
+                        sort_order: s.sort_order ?? i
+                    }))
+                );
+            }
+
+            await updateAccountBalance(account_id, userId, trx);
+
+            if (transfer_account_id) {
+                const transferAccount = await trx('accounts').where({ id: transfer_account_id, user_id: userId }).first();
+                await trx('transactions').insert({
+                    user_id: userId,
+                    account_id: transfer_account_id,
+                    date,
+                    payee: `Transfer: ${account.name}`,
+                    memo,
+                    amount: -amount,
+                    transfer_account_id: account_id,
+                    cleared: true
+                });
+                await trx('transactions').where({ id: newId, user_id: userId }).update({
+                    payee: payee || `Transfer: ${transferAccount.name}`
+                });
+                await updateAccountBalance(transfer_account_id, userId, trx);
+            }
+
+            return newId;
+        });
 
         const txn = await db('transactions').where({ id, user_id: userId }).first();
         if (txn.is_split) {
@@ -219,36 +237,59 @@ export default async function transactionRoutes(fastify) {
             if (!account) return reply.code(403).send({ error: 'Invalid account_id' });
         }
 
+        if (category_id !== undefined && category_id !== null) {
+            const category = await db('categories').where({ id: category_id, user_id: userId }).first();
+            if (!category) return reply.code(403).send({ error: 'Invalid category_id' });
+        }
+
         // Handle splits update
         if (splits !== undefined) {
             if (Array.isArray(splits) && splits.length > 0) {
+                const nextAmount = parseFloat(amount ?? existing.amount);
+                const splitTotal = splits.reduce((sum, split) => sum + parseFloat(split.amount || 0), 0);
+                if (Math.abs(splitTotal - nextAmount) > 0.01) {
+                    return reply.code(400).send({ error: 'Split amounts must equal the transaction amount' });
+                }
+
+                for (const split of splits) {
+                    if (!split.category_id) continue;
+                    const splitCategory = await db('categories').where({ id: split.category_id, user_id: userId }).first();
+                    if (!splitCategory) return reply.code(403).send({ error: 'Invalid split category_id' });
+                }
+
                 updates.is_split = true;
                 updates.category_id = null;
-                await db('transaction_splits').where({ transaction_id: request.params.id }).del();
-                await db('transaction_splits').insert(
-                    splits.map((s, i) => ({
-                        transaction_id: parseInt(request.params.id),
-                        category_id: s.category_id || null,
-                        amount: s.amount,
-                        memo: s.memo || null,
-                        payee: s.payee || null,
-                        sort_order: s.sort_order ?? i
-                    }))
-                );
             } else {
                 // Splits removed
                 updates.is_split = false;
-                await db('transaction_splits').where({ transaction_id: request.params.id }).del();
             }
         }
 
-        await db('transactions').where({ id: request.params.id, user_id: userId }).update(updates);
+        await db.transaction(async (trx) => {
+            if (splits !== undefined) {
+                await trx('transaction_splits').where({ transaction_id: request.params.id }).del();
 
-        // Recalculate balances
-        await updateAccountBalance(existing.account_id, userId);
-        if (updates.account_id && updates.account_id !== existing.account_id) {
-            await updateAccountBalance(updates.account_id, userId);
-        }
+                if (Array.isArray(splits) && splits.length > 0) {
+                    await trx('transaction_splits').insert(
+                        splits.map((s, i) => ({
+                            transaction_id: parseInt(request.params.id, 10),
+                            category_id: s.category_id || null,
+                            amount: s.amount,
+                            memo: s.memo || null,
+                            payee: s.payee || null,
+                            sort_order: s.sort_order ?? i
+                        }))
+                    );
+                }
+            }
+
+            await trx('transactions').where({ id: request.params.id, user_id: userId }).update(updates);
+
+            await updateAccountBalance(existing.account_id, userId, trx);
+            if (updates.account_id && updates.account_id !== existing.account_id) {
+                await updateAccountBalance(updates.account_id, userId, trx);
+            }
+        });
 
         const txn = await db('transactions').where({ id: request.params.id, user_id: userId }).first();
         if (txn.is_split) {
@@ -269,8 +310,27 @@ export default async function transactionRoutes(fastify) {
             .first();
         if (!txn) return reply.code(404).send({ error: 'Transaction not found' });
 
-        await db('transactions').where({ id: request.params.id, user_id: userId }).del();
-        await updateAccountBalance(txn.account_id, userId);
+        await db.transaction(async (trx) => {
+            if (txn.transfer_account_id) {
+                const mirrorTxn = await trx('transactions')
+                    .where({
+                        user_id: userId,
+                        account_id: txn.transfer_account_id,
+                        transfer_account_id: txn.account_id,
+                        date: txn.date
+                    })
+                    .andWhere('amount', -parseFloat(txn.amount))
+                    .first();
+
+                if (mirrorTxn) {
+                    await trx('transactions').where({ id: mirrorTxn.id, user_id: userId }).del();
+                    await updateAccountBalance(mirrorTxn.account_id, userId, trx);
+                }
+            }
+
+            await trx('transactions').where({ id: request.params.id, user_id: userId }).del();
+            await updateAccountBalance(txn.account_id, userId, trx);
+        });
         return { success: true };
     });
 
@@ -583,12 +643,12 @@ export default async function transactionRoutes(fastify) {
     });
 }
 
-async function updateAccountBalance(accountId, userId) {
-    const result = await db('transactions')
+async function updateAccountBalance(accountId, userId, executor = db) {
+    const result = await executor('transactions')
         .where({ account_id: accountId, user_id: userId })
         .sum('amount as total')
         .first();
-    await db('accounts')
+    await executor('accounts')
         .where({ id: accountId, user_id: userId })
         .update({ balance: result?.total || 0, updated_at: new Date().toISOString() });
 }

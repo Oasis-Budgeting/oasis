@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken';
+import { getJwtSecret } from '../config/auth.js';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-in-prod';
+const JWT_SECRET = getJwtSecret();
 
 export default async function authenticate(request, reply) {
     const authHeader = request.headers.authorization;

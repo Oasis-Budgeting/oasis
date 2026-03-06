@@ -6,6 +6,7 @@ import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import { execSync } from 'child_process';
 import db from './db/knex.js';
+import { logAuthConfigWarning } from './config/auth.js';
 import accountRoutes from './routes/accounts.js';
 import categoryRoutes from './routes/categories.js';
 import transactionRoutes from './routes/transactions.js';
@@ -27,6 +28,7 @@ import splitTemplateRoutes from './routes/splitTemplates.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+let isReady = false;
 
 const app = Fastify({
     logger: true,
@@ -36,6 +38,26 @@ const app = Fastify({
 
 await app.register(cors, { origin: true });
 await app.register(fastifyMultipart, { limits: { fileSize: 10 * 1024 * 1024 } });
+
+app.setErrorHandler((err, request, reply) => {
+    request.log.error(err);
+    if (reply.sent) return;
+    reply.code(err.statusCode || 500).send({ error: err.statusCode && err.statusCode < 500 ? err.message : 'Internal server error' });
+});
+
+app.get('/api/health', async () => ({
+    status: 'ok',
+    uptime: process.uptime()
+}));
+
+app.get('/api/ready', async (request, reply) => {
+    if (!isReady) {
+        return reply.code(503).send({ status: 'starting' });
+    }
+
+    await db.raw('SELECT 1');
+    return { status: 'ready' };
+});
 
 // API routes
 app.register(authRoutes, { prefix: '/api/auth' });
@@ -79,9 +101,11 @@ try {
 // Run migrations on startup
 async function start() {
     try {
+        logAuthConfigWarning(app.log);
         app.log.info('Running database migrations...');
         await db.migrate.latest();
         app.log.info('Database migrations completed successfully');
+        isReady = true;
 
         const host = process.env.HOST || '0.0.0.0';
         const port = parseInt(process.env.PORT || '3000', 10);
@@ -92,5 +116,22 @@ async function start() {
         process.exit(1);
     }
 }
+
+async function shutdown(signal) {
+    app.log.info(`Received ${signal}, shutting down`);
+    isReady = false;
+
+    try {
+        await app.close();
+        await db.destroy();
+        process.exit(0);
+    } catch (err) {
+        app.log.error(err);
+        process.exit(1);
+    }
+}
+
+process.on('SIGINT', () => shutdown('SIGINT'));
+process.on('SIGTERM', () => shutdown('SIGTERM'));
 
 start();
