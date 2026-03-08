@@ -1,3 +1,8 @@
+## 2026-03-07 - Hardcoded JWT Secret Vulnerability
+**Vulnerability:** A hardcoded default JWT secret (`your-super-secret-jwt-key-change-in-prod`) was used as a fallback if `JWT_SECRET` was not provided in the environment. While it threw an error in production environments (`NODE_ENV=production`), many users could deploy the app without setting `NODE_ENV` properly, falling back to the hardcoded secret and leaving their sessions vulnerable to forgery.
+**Learning:** Using a hardcoded fallback secret in an open-source repository is a critical security risk. Attackers can trivially look up the codebase to extract the default key and bypass authentication on any instance that failed to explicitly configure its environment correctly.
+**Prevention:** Instead of hardcoded strings, use a dynamically generated random string on startup (e.g. `crypto.randomBytes(32).toString('hex')`) as the fallback secret. This ensures that even unconfigured instances cannot be compromised using a known shared key, at the acceptable cost of session invalidation upon server restarts for misconfigured instances.
+
 ## 2025-03-03 - SSRF in AI Routes `base_url` parameter
 **Vulnerability:** A Server-Side Request Forgery (SSRF) vulnerability existed in `api/src/routes/ai.js`. The `base_url` parameter was provided by the user and directly concatenated into `fetch()` calls without any URL validation.
 **Learning:** By allowing user-provided base URLs to be passed directly to fetch requests originating from the backend server, attackers could query internal systems, databases, or cloud metadata endpoints.
