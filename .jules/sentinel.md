@@ -1,3 +1,8 @@
+## 2026-03-09 - Unauthenticated Prometheus Metrics Disclosure
+**Vulnerability:** The `/metrics` endpoint in `api/src/routes/metrics.js` was exposed publicly without any authentication. This endpoint calculates and returns sensitive business/financial metrics (`budget_total_balance`, `budget_total_assigned`, etc.) for all users combined.
+**Learning:** Automatically exposing a Prometheus endpoint (`/metrics`) is standard practice, but when the metrics contain aggregate data from multiple users, it becomes a severe data disclosure vulnerability if left unprotected.
+**Prevention:** Always secure endpoints that expose sensitive metrics. In this case, require a shared secret via an `Authorization: Bearer <token>` header (using `process.env.METRICS_SECRET`) to ensure only authorized scraping services (like a configured Prometheus instance) can pull this data.
+
 ## 2026-03-07 - Hardcoded JWT Secret Vulnerability
 **Vulnerability:** A hardcoded default JWT secret (`your-super-secret-jwt-key-change-in-prod`) was used as a fallback if `JWT_SECRET` was not provided in the environment. While it threw an error in production environments (`NODE_ENV=production`), many users could deploy the app without setting `NODE_ENV` properly, falling back to the hardcoded secret and leaving their sessions vulnerable to forgery.
 **Learning:** Using a hardcoded fallback secret in an open-source repository is a critical security risk. Attackers can trivially look up the codebase to extract the default key and bypass authentication on any instance that failed to explicitly configure its environment correctly.

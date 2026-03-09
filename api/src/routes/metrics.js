@@ -105,6 +105,21 @@ async function updateMetrics() {
 
 export default async function metricsRoutes(fastify) {
     fastify.get('/metrics', async (request, reply) => {
+        // Enforce shared secret authentication for Prometheus metrics to prevent sensitive data leakage
+        const authHeader = request.headers.authorization;
+        const metricsSecret = process.env.METRICS_SECRET;
+
+        if (metricsSecret) {
+            if (!authHeader || authHeader !== `Bearer ${metricsSecret}`) {
+                return reply.code(401).send({ error: 'Unauthorized' });
+            }
+        } else {
+            // If no secret is configured, warn but allow access (or block in production)
+            if (process.env.NODE_ENV === 'production') {
+                return reply.code(403).send({ error: 'METRICS_SECRET must be configured in production' });
+            }
+        }
+
         await updateMetrics();
         reply.header('Content-Type', register.contentType);
         return register.metrics();
