@@ -213,6 +213,7 @@ export default function AiAdvisor() {
                             className="bg-surface-container border-outline-variant/30 flex-1"
                         />
                         <Button type="submit" disabled={!model || !input.trim() || loading}
+                            aria-label="Send message"
                             className="bg-primary text-primary-foreground hover:bg-primary/90">
                             <Send className="w-4 h-4" />
                         </Button>
