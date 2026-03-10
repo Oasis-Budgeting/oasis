@@ -4,6 +4,7 @@ services:
     container_name: oasis
     environment:
       - JWT_SECRET=${JWT_SECRET:?JWT_SECRET must be set in .env or shell environment}
+      - METRICS_SECRET=${METRICS_SECRET:-dev-metrics-secret-key}
     ports:
       - "3000:3000"
     volumes:

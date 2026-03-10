@@ -19,3 +19,8 @@
 **Vulnerability:** Found a Path Traversal vulnerability in the `api/src/routes/transactions.js` file upload endpoint for attachments. An attacker could potentially supply a filename with directory traversal characters (e.g., `../../../etc/passwd`) to escape the upload directory and write/read arbitrary files on the server.
 **Learning:** `path.join` combined with `part.filename` directly from the user can result in path traversal, even if the filename is prepended with a random UUID (e.g., `1234-../../../etc/passwd` resolves to `/etc/passwd`).
 **Prevention:** Always sanitize user-supplied filenames before using them in file system operations. `path.basename(filename)` is a simple way to extract just the file name and discard any directory components.
+
+## 2026-03-10 - Timing Attack in Secret Comparison
+**Vulnerability:** Comparing security tokens or secrets using standard string equality (`!==`) exposes the system to timing attacks. An attacker can measure the time it takes for the comparison to fail to guess the secret character by character.
+**Learning:** In the `/metrics` route, checking the `METRICS_SECRET` header value against the environment variable with `!==` was vulnerable. String comparisons short-circuit as soon as a character mismatch is found, creating a measurable timing difference.
+**Prevention:** Always use `crypto.timingSafeEqual` from the Node.js `crypto` module to compare sensitive strings. Ensure the buffers being compared are of equal length before calling the function to avoid `TypeError` exceptions.
