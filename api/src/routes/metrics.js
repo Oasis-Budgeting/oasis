@@ -1,5 +1,6 @@
 import client from 'prom-client';
 import db from '../db/knex.js';
+import crypto from 'crypto';
 
 const register = new client.Registry();
 client.collectDefaultMetrics({ register });
@@ -105,6 +106,25 @@ async function updateMetrics() {
 
 export default async function metricsRoutes(fastify) {
     fastify.get('/metrics', async (request, reply) => {
+        // SECURITY: Require authentication using a METRICS_SECRET bearer token
+        // to prevent unauthorized access to sensitive aggregate data.
+        const authHeader = request.headers['authorization'];
+        const configuredSecret = process.env.METRICS_SECRET;
+
+        if (!configuredSecret || !authHeader || !authHeader.startsWith('Bearer ')) {
+            return reply.code(401).send({ error: 'Unauthorized' });
+        }
+
+        const providedSecret = authHeader.substring(7);
+
+        // Prevent timing attacks using crypto.timingSafeEqual
+        const a = Buffer.from(providedSecret);
+        const b = Buffer.from(configuredSecret);
+
+        if (a.length !== b.length || !crypto.timingSafeEqual(a, b)) {
+            return reply.code(401).send({ error: 'Unauthorized' });
+        }
+
         await updateMetrics();
         reply.header('Content-Type', register.contentType);
         return register.metrics();
