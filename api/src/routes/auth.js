@@ -99,13 +99,16 @@ export default async function authRoutes(fastify) {
             // Find user
             const user = await db('users').where('email', identifier).orWhere('username', identifier).first();
             if (!user) {
+                // Dummy compare to mitigate timing attacks
+                // Use a valid pre-computed hash to ensure it processes without throwing errors
+                await bcrypt.compare(password, '$2b$10$MKkde2l1hZM2cN4Qaeu2KOjaAnpGBANqw81Yv7i5GmipiVI26CiVe');
                 return reply.code(401).send({ error: 'Invalid credentials' });
             }
 
             // Check password
             const validPassword = await bcrypt.compare(password, user.password_hash);
             if (!validPassword) {
-                return reply.code(401).send({ error: 'Invalid email or password' });
+                return reply.code(401).send({ error: 'Invalid credentials' });
             }
 
             // Generate token
