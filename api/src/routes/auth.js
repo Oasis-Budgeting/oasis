@@ -6,6 +6,10 @@ import { getJwtSecret } from '../config/auth.js';
 
 const JWT_SECRET = getJwtSecret();
 
+// DUMMY_HASH is used to mitigate timing attacks by simulating a password comparison
+// when a user is not found, ensuring the login endpoint always takes a similar amount of time.
+const DUMMY_HASH = '$2b$10$Uo0UBxmkjV2azNphZPa2he1RvRk/JZTYHwN0p/m.Sc00DcONTvuiW';
+
 export default async function authRoutes(fastify) {
     // Register User
     fastify.post('/register', async (request, reply) => {
@@ -99,13 +103,15 @@ export default async function authRoutes(fastify) {
             // Find user
             const user = await db('users').where('email', identifier).orWhere('username', identifier).first();
             if (!user) {
+                // Perform a dummy compare to prevent user enumeration timing attacks
+                await bcrypt.compare(password, DUMMY_HASH);
                 return reply.code(401).send({ error: 'Invalid credentials' });
             }
 
             // Check password
             const validPassword = await bcrypt.compare(password, user.password_hash);
             if (!validPassword) {
-                return reply.code(401).send({ error: 'Invalid email or password' });
+                return reply.code(401).send({ error: 'Invalid credentials' });
             }
 
             // Generate token
