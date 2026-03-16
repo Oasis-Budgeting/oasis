@@ -16,6 +16,12 @@ export default async function authRoutes(fastify) {
                 return reply.code(400).send({ error: 'Name, username, email, and password are required' });
             }
 
+            if (password.length < 8) {
+                return reply.code(400).send({ error: 'Password must be at least 8 characters long' });
+            } else if (password.length > 72) {
+                return reply.code(400).send({ error: 'Password cannot exceed 72 characters' });
+            }
+
             // Check if user already exists
             const existingUser = await db('users').where({ email }).orWhere({ username }).first();
             if (existingUser) {
@@ -170,6 +176,12 @@ export default async function authRoutes(fastify) {
 
             if (!token || !password) {
                 return reply.code(400).send({ error: 'Token and new password are required' });
+            }
+
+            if (password.length < 8) {
+                return reply.code(400).send({ error: 'Password must be at least 8 characters long' });
+            } else if (password.length > 72) {
+                return reply.code(400).send({ error: 'Password cannot exceed 72 characters' });
             }
 
             // Find valid, unused token
