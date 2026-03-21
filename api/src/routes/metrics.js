@@ -1,4 +1,5 @@
 import client from 'prom-client';
+import crypto from 'crypto';
 import db from '../db/knex.js';
 
 const register = new client.Registry();
@@ -105,6 +106,34 @@ async function updateMetrics() {
 
 export default async function metricsRoutes(fastify) {
     fastify.get('/metrics', async (request, reply) => {
+        const metricsSecret = process.env.METRICS_SECRET;
+
+        // Fail securely if METRICS_SECRET is not configured
+        if (!metricsSecret) {
+            fastify.log.warn('METRICS_SECRET is not configured. Metrics endpoint is disabled.');
+            return reply.code(404).send({ error: 'Not found' });
+        }
+
+        const authHeader = request.headers.authorization;
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            return reply.code(401).send({ error: 'Unauthorized' });
+        }
+
+        const providedToken = authHeader.substring(7);
+
+        // Prevent timing attacks by using timingSafeEqual
+        try {
+            const secretBuffer = Buffer.from(metricsSecret);
+            const tokenBuffer = Buffer.from(providedToken);
+
+            if (secretBuffer.length !== tokenBuffer.length || !crypto.timingSafeEqual(secretBuffer, tokenBuffer)) {
+                return reply.code(401).send({ error: 'Unauthorized' });
+            }
+        } catch (error) {
+            // Catch errors like differing buffer lengths if not caught by length check
+            return reply.code(401).send({ error: 'Unauthorized' });
+        }
+
         await updateMetrics();
         reply.header('Content-Type', register.contentType);
         return register.metrics();
