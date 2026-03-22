@@ -1,6 +1,7 @@
 import db from '../db/knex.js';
 import authenticate from '../middleware/auth.js';
 import { buildFinancialContext } from './export.js';
+import net from 'net';
 
 function isValidBaseUrl(urlStr) {
     if (!urlStr) return false;
@@ -10,11 +11,41 @@ function isValidBaseUrl(urlStr) {
         if (url.protocol !== 'http:' && url.protocol !== 'https:') {
             return false;
         }
-        // Block well-known cloud metadata IPs (AWS, GCP, Azure, etc.)
-        const blockedHosts = ['169.254.169.254', '169.254.169.253', '[fd00:ec2::254]'];
-        if (blockedHosts.includes(url.hostname)) {
+        // Block well-known cloud metadata IPs and internal IPs (SSRF mitigation)
+        const hostname = url.hostname.toLowerCase();
+        const blockedHosts = ['169.254.169.254', '169.254.169.253', '[fd00:ec2::254]', 'metadata.google.internal'];
+
+        if (blockedHosts.includes(hostname)) {
             return false;
         }
+
+        // Allow explicit default local ports for Ollama and LM Studio
+        if ((hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '[::1]') &&
+            (url.port === '11434' || url.port === '1234')) {
+            return true;
+        }
+
+        // Block localhost and internal network IPs
+        if (hostname === 'localhost') return false;
+
+        // Strip brackets for IPv6 check
+        const ipToCheck = hostname.replace(/^\[|\]$/g, '');
+        if (net.isIP(ipToCheck)) {
+            // Block loopback, unspecified, and internal IPv4/IPv6 ranges
+            if (ipToCheck === '127.0.0.1' || ipToCheck === '::1' || ipToCheck === '0.0.0.0' || ipToCheck === '::' ||
+                ipToCheck.startsWith('10.') ||
+                ipToCheck.startsWith('192.168.') ||
+                (ipToCheck.startsWith('172.') && parseInt(ipToCheck.split('.')[1]) >= 16 && parseInt(ipToCheck.split('.')[1]) <= 31) ||
+                ipToCheck.toLowerCase().startsWith('fc') || // IPv6 Unique Local Address
+                ipToCheck.toLowerCase().startsWith('fd') || // IPv6 Unique Local Address
+                ipToCheck.toLowerCase().startsWith('fe8') || // IPv6 Link-Local Address
+                ipToCheck.toLowerCase().startsWith('fe9') ||
+                ipToCheck.toLowerCase().startsWith('fea') ||
+                ipToCheck.toLowerCase().startsWith('feb')) {
+                return false;
+            }
+        }
+
         return true;
     } catch (e) {
         return false;
