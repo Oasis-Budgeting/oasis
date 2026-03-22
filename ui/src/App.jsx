@@ -185,6 +185,7 @@ function ProtectedLayout() {
                                 size="icon"
                                 className="rounded-full text-muted-foreground hover:text-foreground md:hidden"
                                 onClick={() => setSidebarOpen(!sidebarOpen)}
+                                aria-label={sidebarOpen ? "Close menu" : "Open menu"}
                             >
                                 {sidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
                             </Button>
@@ -204,6 +205,7 @@ function ProtectedLayout() {
                                     setTheme(appearanceCycle[nextIndex]);
                                 }}
                                 className="rounded-full text-muted-foreground hover:text-foreground"
+                                aria-label="Toggle theme"
                             >
                                 <Moon className="h-5 w-5" />
                             </Button>
