@@ -16,6 +16,12 @@ export default async function authRoutes(fastify) {
                 return reply.code(400).send({ error: 'Name, username, email, and password are required' });
             }
 
+            // 🛡️ Sentinel: Enforce password length to prevent bcrypt DoS (hashing extremely long strings)
+            // Bcrypt truncates at 72 bytes, but rejecting early prevents unnecessary CPU cycles.
+            if (password.length < 8 || password.length > 72) {
+                return reply.code(400).send({ error: 'Password must be between 8 and 72 characters' });
+            }
+
             // Check if user already exists
             const existingUser = await db('users').where({ email }).orWhere({ username }).first();
             if (existingUser) {
@@ -170,6 +176,11 @@ export default async function authRoutes(fastify) {
 
             if (!token || !password) {
                 return reply.code(400).send({ error: 'Token and new password are required' });
+            }
+
+            // 🛡️ Sentinel: Enforce password length to prevent bcrypt DoS
+            if (password.length < 8 || password.length > 72) {
+                return reply.code(400).send({ error: 'Password must be between 8 and 72 characters' });
             }
 
             // Find valid, unused token
