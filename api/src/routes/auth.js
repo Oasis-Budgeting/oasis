@@ -6,6 +6,10 @@ import { getJwtSecret } from '../config/auth.js';
 
 const JWT_SECRET = getJwtSecret();
 
+// Use a fixed dummy hash to mitigate timing attacks during login when user is not found.
+// This prevents attackers from enumerating valid users by measuring response times.
+const DUMMY_HASH = '$2b$10$ovmdbAzfJEWtJ1czZ1meUu94Zm.GzVcAlPc9iQ1j25uXUWM9N.7qq';
+
 export default async function authRoutes(fastify) {
     // Register User
     fastify.post('/register', async (request, reply) => {
@@ -14,6 +18,11 @@ export default async function authRoutes(fastify) {
 
             if (!name || !username || !email || !password) {
                 return reply.code(400).send({ error: 'Name, username, email, and password are required' });
+            }
+
+            // Security: Enforce password length to prevent bcrypt DoS (Denial of Service) attacks
+            if (password.length < 8 || password.length > 72) {
+                return reply.code(400).send({ error: 'Password must be between 8 and 72 characters' });
             }
 
             // Check if user already exists
@@ -96,16 +105,25 @@ export default async function authRoutes(fastify) {
                 return reply.code(400).send({ error: 'Username/Email and password are required' });
             }
 
+            // Security: Enforce password length to prevent DoS via extremely large string allocations
+            if (password.length > 72) {
+                // Return invalid credentials early to prevent processing massive inputs
+                return reply.code(401).send({ error: 'Invalid credentials' });
+            }
+
             // Find user
             const user = await db('users').where('email', identifier).orWhere('username', identifier).first();
             if (!user) {
+                // Security: Perform a dummy bcrypt comparison to prevent user enumeration via timing attacks
+                await bcrypt.compare(password, DUMMY_HASH);
                 return reply.code(401).send({ error: 'Invalid credentials' });
             }
 
             // Check password
             const validPassword = await bcrypt.compare(password, user.password_hash);
             if (!validPassword) {
-                return reply.code(401).send({ error: 'Invalid email or password' });
+                // Security: Unified error message prevents revealing that the user exists but password was wrong
+                return reply.code(401).send({ error: 'Invalid credentials' });
             }
 
             // Generate token
@@ -170,6 +188,11 @@ export default async function authRoutes(fastify) {
 
             if (!token || !password) {
                 return reply.code(400).send({ error: 'Token and new password are required' });
+            }
+
+            // Security: Enforce password length to prevent bcrypt DoS (Denial of Service) attacks
+            if (password.length < 8 || password.length > 72) {
+                return reply.code(400).send({ error: 'Password must be between 8 and 72 characters' });
             }
 
             // Find valid, unused token

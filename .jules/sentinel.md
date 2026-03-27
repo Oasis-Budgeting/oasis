@@ -19,3 +19,11 @@
 **Vulnerability:** Found a Path Traversal vulnerability in the `api/src/routes/transactions.js` file upload endpoint for attachments. An attacker could potentially supply a filename with directory traversal characters (e.g., `../../../etc/passwd`) to escape the upload directory and write/read arbitrary files on the server.
 **Learning:** `path.join` combined with `part.filename` directly from the user can result in path traversal, even if the filename is prepended with a random UUID (e.g., `1234-../../../etc/passwd` resolves to `/etc/passwd`).
 **Prevention:** Always sanitize user-supplied filenames before using them in file system operations. `path.basename(filename)` is a simple way to extract just the file name and discard any directory components.
+
+## 2026-03-27 - bcrypt Denial of Service & Timing Attack Mitigations
+**Vulnerability:** The `/register`, `/reset-password`, and `/login` endpoints lacked a maximum password length validation. While `bcrypt` intrinsically truncates input to 72 bytes, the backend was still vulnerable to Denial of Service (DoS) attacks caused by extremely large string allocations processed prior to truncation. Additionally, in the `/login` endpoint, `bcrypt.compare()` was bypassed if a user was not found, making the endpoint vulnerable to user enumeration via timing attacks (since the execution time varied whether the user existed or not).
+**Learning:** Hardcoded constraints like input lengths are crucial for APIs handling user credentials, even when the underlying hashing algorithms eventually truncate the payload. Timing differences during login flows can leak existence of valid accounts, providing a vector for targeted attacks.
+**Prevention:**
+1. Implement max password length validation on registration, password reset, and login endpoints (maximum 72 characters, the standard `bcrypt` truncation limit) to prevent large string processing overhead.
+2. Use a static dummy hash (`DUMMY_HASH`) to execute `bcrypt.compare` even when a user is not found, ensuring uniform response times during authentication attempts regardless of whether the email/username exists.
+3. Consistently return generic and identical error messages (e.g., "Invalid credentials") for all authentication failures.
