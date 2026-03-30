@@ -1,0 +1,3 @@
+## 2025-03-01 - Missing ARIA Labels on shadcn `<Button size="icon">` Components
+**Learning:** In the frontend's shadcn/ui implementation, the `<Button size="icon">` component does not enforce or automatically provide `aria-label` attributes. This leads to accessibility gaps for screen readers when buttons only contain icons (like `ChevronLeft`, `ChevronRight`, or `X`).
+**Action:** Always manually add and verify `aria-label`s on all icon-only instances of the `Button` component to ensure accessibility compliance.
