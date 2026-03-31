@@ -19,3 +19,8 @@
 **Vulnerability:** Found a Path Traversal vulnerability in the `api/src/routes/transactions.js` file upload endpoint for attachments. An attacker could potentially supply a filename with directory traversal characters (e.g., `../../../etc/passwd`) to escape the upload directory and write/read arbitrary files on the server.
 **Learning:** `path.join` combined with `part.filename` directly from the user can result in path traversal, even if the filename is prepended with a random UUID (e.g., `1234-../../../etc/passwd` resolves to `/etc/passwd`).
 **Prevention:** Always sanitize user-supplied filenames before using them in file system operations. `path.basename(filename)` is a simple way to extract just the file name and discard any directory components.
+
+## 2024-05-24 - AI Chat XSS
+**Vulnerability:** XSS vulnerability in `AiAdvisor.jsx` caused by using `dangerouslySetInnerHTML` for user messages directly, and poorly sanitized assistant messages.
+**Learning:** Even internal AI chat UI tools present XSS risks if user inputs or assistant responses contain raw HTML that is directly rendered to the DOM. React's default text rendering should be preferred, and HTML insertion should require explicit escaping via an `escapeHtml` utility before safe formatting tags (like bold/newlines) are added.
+**Prevention:** Avoid `dangerouslySetInnerHTML` for user input, and always `escapeHtml()` any dynamically sourced content (like AI model responses) before applying custom markdown-like regex replacements.
