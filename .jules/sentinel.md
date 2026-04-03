@@ -19,3 +19,8 @@
 **Vulnerability:** Found a Path Traversal vulnerability in the `api/src/routes/transactions.js` file upload endpoint for attachments. An attacker could potentially supply a filename with directory traversal characters (e.g., `../../../etc/passwd`) to escape the upload directory and write/read arbitrary files on the server.
 **Learning:** `path.join` combined with `part.filename` directly from the user can result in path traversal, even if the filename is prepended with a random UUID (e.g., `1234-../../../etc/passwd` resolves to `/etc/passwd`).
 **Prevention:** Always sanitize user-supplied filenames before using them in file system operations. `path.basename(filename)` is a simple way to extract just the file name and discard any directory components.
+
+## 2026-03-08 - bcrypt Denial of Service (DoS) Vulnerability
+**Vulnerability:** The `/register`, `/login`, and `/reset-password` endpoints allowed arbitrarily long passwords. Because `bcrypt` hashing is computationally expensive, attackers could submit extremely long passwords (e.g., 100,000 characters) to exhaust server CPU and cause a Denial of Service (DoS).
+**Learning:** `bcrypt` naturally truncates inputs at 72 bytes, but depending on the implementation or before truncation, handling massive strings still causes memory and CPU overhead.
+**Prevention:** Always enforce a maximum length on password inputs (e.g., 72 characters) before passing them to any cryptographic functions like `bcrypt`.
