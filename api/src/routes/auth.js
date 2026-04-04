@@ -99,13 +99,18 @@ export default async function authRoutes(fastify) {
             // Find user
             const user = await db('users').where('email', identifier).orWhere('username', identifier).first();
             if (!user) {
+                // SECURITY: Mitigate timing attacks by performing a dummy hash comparison
+                // This prevents attackers from enumerating users by measuring response times.
+                // The hash is a dummy string that matches the expected bcrypt format.
+                const dummyHash = '$2b$10$wM8GtGcDQqLBYLcKa3LCAuG4wmLhF1p3mmrvIXemyI.SP1PEx71Hm';
+                await bcrypt.compare(password, dummyHash);
                 return reply.code(401).send({ error: 'Invalid credentials' });
             }
 
             // Check password
             const validPassword = await bcrypt.compare(password, user.password_hash);
             if (!validPassword) {
-                return reply.code(401).send({ error: 'Invalid email or password' });
+                return reply.code(401).send({ error: 'Invalid credentials' });
             }
 
             // Generate token
