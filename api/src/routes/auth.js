@@ -16,6 +16,11 @@ export default async function authRoutes(fastify) {
                 return reply.code(400).send({ error: 'Name, username, email, and password are required' });
             }
 
+            // Security: Prevent bcrypt DoS
+            if (password.length > 72) {
+                return reply.code(400).send({ error: 'Password must not exceed 72 characters' });
+            }
+
             // Check if user already exists
             const existingUser = await db('users').where({ email }).orWhere({ username }).first();
             if (existingUser) {
@@ -96,6 +101,11 @@ export default async function authRoutes(fastify) {
                 return reply.code(400).send({ error: 'Username/Email and password are required' });
             }
 
+            // Security: Prevent bcrypt DoS
+            if (password.length > 72) {
+                return reply.code(401).send({ error: 'Invalid email or password' });
+            }
+
             // Find user
             const user = await db('users').where('email', identifier).orWhere('username', identifier).first();
             if (!user) {
@@ -170,6 +180,11 @@ export default async function authRoutes(fastify) {
 
             if (!token || !password) {
                 return reply.code(400).send({ error: 'Token and new password are required' });
+            }
+
+            // Security: Prevent bcrypt DoS
+            if (password.length > 72) {
+                return reply.code(400).send({ error: 'Password must not exceed 72 characters' });
             }
 
             // Find valid, unused token
