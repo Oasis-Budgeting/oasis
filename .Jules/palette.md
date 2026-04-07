@@ -1,0 +1,3 @@
+## 2026-04-07 - App Layout Icon Buttons Accessibility
+**Learning:** Icon-only `<Button size="icon">` components and custom floating action buttons (FABs) in the application layout do not automatically enforce or inherit `aria-label` attributes, creating accessibility gaps for screen reader users where only an icon is present.
+**Action:** Always manually add explicit `aria-label` attributes, along with state indicators like `aria-expanded` for toggle buttons or `aria-keyshortcuts` for buttons with global keyboard shortcuts, to all icon-only interactive elements to ensure compliance and usability.
