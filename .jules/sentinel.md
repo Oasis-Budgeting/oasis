@@ -19,3 +19,7 @@
 **Vulnerability:** Found a Path Traversal vulnerability in the `api/src/routes/transactions.js` file upload endpoint for attachments. An attacker could potentially supply a filename with directory traversal characters (e.g., `../../../etc/passwd`) to escape the upload directory and write/read arbitrary files on the server.
 **Learning:** `path.join` combined with `part.filename` directly from the user can result in path traversal, even if the filename is prepended with a random UUID (e.g., `1234-../../../etc/passwd` resolves to `/etc/passwd`).
 **Prevention:** Always sanitize user-supplied filenames before using them in file system operations. `path.basename(filename)` is a simple way to extract just the file name and discard any directory components.
+## 2025-02-23 - [User Enumeration Timing Attack on Login Endpoint]
+**Vulnerability:** The login endpoint checked if a user existed before executing bcrypt.compare(), allowing an attacker to determine if a username or email is registered based on response times. Also, the error message slightly differed in previous implementation.
+**Learning:** Checking for user existence and then skipping computationally expensive operations (like bcrypt) when the user isn't found creates a noticeable timing difference.
+**Prevention:** Always execute the computationally expensive operation (e.g. using a dummy bcrypt hash when a user isn't found) and return consistent error messages to mask whether the user exists or not.
