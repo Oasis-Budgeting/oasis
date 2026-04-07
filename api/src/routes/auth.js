@@ -98,14 +98,17 @@ export default async function authRoutes(fastify) {
 
             // Find user
             const user = await db('users').where('email', identifier).orWhere('username', identifier).first();
-            if (!user) {
-                return reply.code(401).send({ error: 'Invalid credentials' });
-            }
+
+            // 🛡️ Sentinel: Mitigate user enumeration timing attack by always executing bcrypt.compare.
+            // A dummy hash ensures that the comparison takes approximately the same time,
+            // even if the user is not found. We also return a consistent error message.
+            const dummyHash = '$2b$10$fpKYc//Rz4owvTI6GgjvmenmHTKV37cz76.RkO3TCuF4tHU5uChLO';
+            const hashToCompare = user ? user.password_hash : dummyHash;
 
             // Check password
-            const validPassword = await bcrypt.compare(password, user.password_hash);
-            if (!validPassword) {
-                return reply.code(401).send({ error: 'Invalid email or password' });
+            const validPassword = await bcrypt.compare(password, hashToCompare);
+            if (!user || !validPassword) {
+                return reply.code(401).send({ error: 'Invalid credentials' });
             }
 
             // Generate token
