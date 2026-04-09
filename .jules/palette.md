@@ -1,0 +1,3 @@
+## 2024-04-09 - Missing ARIA Labels on Icon Buttons
+**Learning:** Icon-only interactive elements in this app's design system (such as `<Button size="icon">` from shadcn/ui and custom floating action buttons) do not automatically enforce or provide `aria-label`, `aria-expanded`, or `aria-keyshortcuts` attributes. This leaves them inaccessible to screen readers by default.
+**Action:** Always manually add explicit `aria-label` attributes to any icon-only button to ensure screen reader compatibility. Add state indicators like `aria-expanded` for toggles and `aria-keyshortcuts` for buttons with keyboard bindings.
