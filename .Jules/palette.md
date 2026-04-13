@@ -1,0 +1,3 @@
+## 2026-04-13 - Missing ARIA Labels on Icon-Only Elements
+**Learning:** In the frontend's shadcn/ui implementation, the `<Button size="icon">` component does not enforce or automatically provide `aria-label` attributes, making it necessary to manually add and verify `aria-label`s on all icon-only instances for accessibility compliance. Similarly, floating action buttons and menu toggles need state indicators like `aria-expanded` or `aria-keyshortcuts` to provide a complete screen reader experience.
+**Action:** When working on UI components or pages, proactively check instances of `<Button size="icon">` and similar icon-only interactive elements to ensure they include explicit, descriptive `aria-label` attributes and appropriate ARIA state indicators.
