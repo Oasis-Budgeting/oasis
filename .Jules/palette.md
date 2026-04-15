@@ -1,0 +1,3 @@
+## 2024-06-25 - [Accessibility] ARIA labels missing on App Shell icon-only buttons
+**Learning:** In the shadcn/ui implementation, the `<Button size="icon">` component does not enforce or automatically provide `aria-label` attributes. This leads to global accessibility issues on structural app elements like the mobile sidebar toggle, theme toggle, and the Quick Add floating action button.
+**Action:** Always manually add and verify `aria-label`s on all icon-only interactive elements for accessibility compliance, especially those providing core application navigation or functionality. In addition, when adding them to toggle buttons or buttons with keyboard shortcuts, also remember to add `aria-expanded` and `aria-keyshortcuts` to convey their full context.
