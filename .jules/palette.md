@@ -1,0 +1,3 @@
+## 2026-04-18 - Missing ARIA Labels on Icon-only Buttons
+**Learning:** The UI implementation uses a custom `<Button size="icon">` component from the shadcn/ui-like design system, which does not enforce or automatically provide `aria-label` attributes. This leads to icon-only buttons (like the sidebar toggle, theme toggle, and Quick Add FAB) lacking accessible names for screen readers.
+**Action:** When using or reviewing `<Button size="icon">`, always verify that an explicit `aria-label` is provided, and consider adding state indicators like `aria-expanded` or `aria-keyshortcuts` where appropriate for interactive elements.
