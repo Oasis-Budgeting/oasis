@@ -1,0 +1,3 @@
+## 2024-05-18 - Accessibility for Stateful & Shortcut Icon Buttons
+**Learning:** In the shadcn/ui implementation, `<Button size="icon">` components do not enforce `aria-label`, so it's easily missed. Moreover, stateful icon-only toggles (like sidebar menus) need `aria-expanded` to reflect their open/closed state to screen readers. Finally, icon buttons mapped to keyboard shortcuts (like floating action buttons) require `aria-keyshortcuts` to expose those shortcuts to assistive technology.
+**Action:** When adding or auditing icon-only buttons, especially toggles or FABs, proactively verify `aria-label`, `aria-expanded` (if stateful), and `aria-keyshortcuts` (if mapped to shortcuts) are present.
