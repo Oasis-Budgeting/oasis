@@ -19,3 +19,10 @@
 **Vulnerability:** Found a Path Traversal vulnerability in the `api/src/routes/transactions.js` file upload endpoint for attachments. An attacker could potentially supply a filename with directory traversal characters (e.g., `../../../etc/passwd`) to escape the upload directory and write/read arbitrary files on the server.
 **Learning:** `path.join` combined with `part.filename` directly from the user can result in path traversal, even if the filename is prepended with a random UUID (e.g., `1234-../../../etc/passwd` resolves to `/etc/passwd`).
 **Prevention:** Always sanitize user-supplied filenames before using them in file system operations. `path.basename(filename)` is a simple way to extract just the file name and discard any directory components.
+
+## 2026-04-21 - Cross-Site Scripting (XSS) in AI Chat
+**Vulnerability:** A Cross-Site Scripting (XSS) vulnerability existed in `ui/src/pages/AiAdvisor.jsx`. The application used `dangerouslySetInnerHTML` to render both user and assistant chat messages. Because user input was not sanitized before being rendered, an attacker could input malicious HTML (e.g., `<script>alert('XSS')</script>`) which would be executed in the browser context.
+**Learning:** Using `dangerouslySetInnerHTML` directly with unsanitized user input is a fundamental security risk. Even for assistant messages where formatting is applied, the content must be escaped first because the LLM could regurgitate malicious user input or be prompt-injected to produce malicious code.
+**Prevention:**
+1. Render user messages as plain text (`{msg.content}`) to prevent the browser from executing any HTML.
+2. For assistant messages that require basic formatting (like bolding and bullet points), apply a custom `escapeHtml` utility to sanitize HTML special characters (`&`, `<`, `>`, `"`, `'`) *before* executing regex replacements that output safe HTML tags. This ensures user-supplied strings cannot break out of the intended formatting structure.
