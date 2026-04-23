@@ -19,3 +19,10 @@
 **Vulnerability:** Found a Path Traversal vulnerability in the `api/src/routes/transactions.js` file upload endpoint for attachments. An attacker could potentially supply a filename with directory traversal characters (e.g., `../../../etc/passwd`) to escape the upload directory and write/read arbitrary files on the server.
 **Learning:** `path.join` combined with `part.filename` directly from the user can result in path traversal, even if the filename is prepended with a random UUID (e.g., `1234-../../../etc/passwd` resolves to `/etc/passwd`).
 **Prevention:** Always sanitize user-supplied filenames before using them in file system operations. `path.basename(filename)` is a simple way to extract just the file name and discard any directory components.
+## 2025-02-23 - XSS in AI Advisor Chat
+**Vulnerability:** A Cross-Site Scripting (XSS) vulnerability was found in `ui/src/pages/AiAdvisor.jsx`. User and AI messages were both directly rendered using React's `dangerouslySetInnerHTML`. Because user inputs weren't HTML escaped, an attacker could potentially execute arbitrary scripts by supplying a malicious payload (e.g. `<img src=x onerror=alert(1)>`).
+**Learning:** Using `dangerouslySetInnerHTML` for any user-generated content (including AI outputs containing user prompts) is unsafe without rigorous server-side or client-side HTML escaping.
+**Prevention:**
+1. Only use `dangerouslySetInnerHTML` when absolutely necessary, and always pair it with an explicit escaping step.
+2. We introduced a central `escapeHtml` utility in `ui/src/lib/utils.js` to strip dangerous HTML entities out.
+3. For the AI Advisor chat, user inputs are now safely rendered using standard text nodes (`<div>{msg.content}</div>`), while AI outputs are first escaped, then formatted via regex, and safely rendered.
