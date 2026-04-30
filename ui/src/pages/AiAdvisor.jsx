@@ -1,3 +1,4 @@
+import { escapeHtml } from "../lib/utils.js";
 import { useState, useEffect, useRef } from 'react';
 import { Bot, Send, Settings2, Loader2, Sparkles, RefreshCw, Copy, Check, Download, ChevronDown, Zap } from 'lucide-react';
 import { getAiModels, chatWithAi, getFinancialExport } from '../api/client.js';
@@ -171,14 +172,18 @@ export default function AiAdvisor() {
                                             ? 'bg-destructive/10 border border-destructive/20 text-destructive'
                                             : 'bg-surface-container/50 border border-outline-variant/30 text-card-foreground'
                                         }`}>
-                                        <div className="text-sm whitespace-pre-wrap leading-relaxed" dangerouslySetInnerHTML={{
-                                            __html: msg.role === 'assistant'
-                                                ? msg.content
+                                        {msg.role === 'assistant' ? (
+                                            <div className="text-sm whitespace-pre-wrap leading-relaxed" dangerouslySetInnerHTML={{
+                                                __html: escapeHtml(msg.content)
                                                     .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
                                                     .replace(/\n/g, '<br/>')
                                                     .replace(/^- /gm, '• ')
-                                                : msg.content
-                                        }} />
+                                            }} />
+                                        ) : (
+                                            <div className="text-sm whitespace-pre-wrap leading-relaxed">
+                                                {msg.content}
+                                            </div>
+                                        )}
                                         {msg.role === 'assistant' && !msg.error && (
                                             <button onClick={() => copyMessage(msg.content, i)}
                                                 className="mt-2 text-[10px] text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">
