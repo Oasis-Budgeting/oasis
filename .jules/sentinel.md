@@ -19,3 +19,10 @@
 **Vulnerability:** Found a Path Traversal vulnerability in the `api/src/routes/transactions.js` file upload endpoint for attachments. An attacker could potentially supply a filename with directory traversal characters (e.g., `../../../etc/passwd`) to escape the upload directory and write/read arbitrary files on the server.
 **Learning:** `path.join` combined with `part.filename` directly from the user can result in path traversal, even if the filename is prepended with a random UUID (e.g., `1234-../../../etc/passwd` resolves to `/etc/passwd`).
 **Prevention:** Always sanitize user-supplied filenames before using them in file system operations. `path.basename(filename)` is a simple way to extract just the file name and discard any directory components.
+## 2026-04-18 - Cross-Site Scripting (XSS) in AI Advisor
+**Vulnerability:** A Cross-Site Scripting (XSS) vulnerability existed in `ui/src/pages/AiAdvisor.jsx`. User messages and AI responses were rendered directly into the DOM using `dangerouslySetInnerHTML` without proper sanitization. An attacker could potentially inject malicious scripts into the chat history, which would be executed when the user views the chat.
+**Learning:** Using `dangerouslySetInnerHTML` is inherently risky, especially when rendering content that is influenced directly or indirectly by user input (such as an LLM responding with a malicious prompt sent by a user). Even if the backend sanitizes the user prompt, the LLM might still generate a malicious response that gets executed by the frontend.
+**Prevention:**
+1. Avoid `dangerouslySetInnerHTML` whenever possible.
+2. If rendering rich text, always sanitize the content using a utility function like `escapeHtml` or a robust library like DOMPurify *before* it is parsed by `dangerouslySetInnerHTML`.
+3. Separate the rendering logic: User messages can often be rendered as plain text (since they usually don't contain formatting), while AI responses might require sanitization before regex replacements (e.g. bolding, lists) are applied.
