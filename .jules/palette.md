@@ -1,0 +1,3 @@
+## 2024-05-24 - Stateful Toggle and Shortcut Accessibility
+**Learning:** In the bucket-budget application, several key interactive elements are icon-only buttons. Stateful toggles (like the sidebar menu) require `aria-expanded` to communicate their open/closed state to screen readers. Furthermore, interactive icon buttons mapped to global keyboard shortcuts (like the Quick Add FAB mapped to Ctrl+N) require `aria-keyshortcuts` so screen readers announce the availability of the shortcut to users.
+**Action:** When auditing or building icon-only buttons, always verify if they toggle visual state (add `aria-expanded`) or have keyboard shortcut mappings (add `aria-keyshortcuts`), in addition to ensuring a standard `aria-label` is present.
